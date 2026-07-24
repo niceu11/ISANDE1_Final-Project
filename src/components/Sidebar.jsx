@@ -1,0 +1,75 @@
+import { NavLink, useNavigate } from 'react-router-dom';
+import ShieldCrest from './ShieldCrest';
+import './Sidebar.css';
+
+const NAV_ITEMS = {
+  ae: [
+    { label: 'Dashboard',  path: '/ae/dashboard' },
+    { label: 'Inquiries',  path: '/ae/inquiries' },
+    { label: 'Calendar',   path: '/ae/calendar' },
+    { label: 'Clients',    path: '/ae/clients/1' },
+    { label: 'Payments',   path: '/ae/payments/1' },
+  ],
+  manager: [
+    { label: 'Dashboard',  path: '/manager/dashboard' },
+  ],
+  ceo: [
+    { label: 'Dashboard',  path: '/ceo/dashboard' },
+  ],
+};
+
+const ROLE_LABELS = {
+  ae:      { name: 'Miss Paula', title: 'Account Executive' },
+  manager: { name: 'Christine',  title: 'Events Manager' },
+  ceo:     { name: 'Rowena',     title: 'CEO' },
+};
+
+export default function Sidebar({ role }) {
+  const items = NAV_ITEMS[role] ?? [];
+  const user  = ROLE_LABELS[role] ?? { name: role, title: '' };
+  const navigate = useNavigate();
+
+  return (
+    <aside className="sidebar">
+      <div className="sidebar-brand">
+        <ShieldCrest size={38} color="#dcaf61" />
+        <div className="sidebar-brand-text">
+          <span className="sidebar-brand-name">Soirée Hub</span>
+          <span className="sidebar-brand-sub">Event Management</span>
+        </div>
+      </div>
+
+      <nav className="sidebar-nav">
+        {items.map((item) => (
+          <NavLink
+            key={item.path}
+            to={item.path}
+            className={({ isActive }) =>
+              'sidebar-link' + (isActive ? ' active' : '')
+            }
+          >
+            {item.label}
+          </NavLink>
+        ))}
+      </nav>
+
+      <div className="sidebar-footer">
+        <div className="sidebar-user">
+          <div className="sidebar-avatar">
+            {user.name.charAt(0)}
+          </div>
+          <div>
+            <div className="sidebar-user-name">{user.name}</div>
+            <div className="sidebar-user-title">{user.title}</div>
+          </div>
+        </div>
+        <button
+          className="sidebar-logout"
+          onClick={() => navigate('/login')}
+        >
+          Log out
+        </button>
+      </div>
+    </aside>
+  );
+}

@@ -1,0 +1,61 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Jost:wght@300;400;500;600&display=swap');
+
+:root {
+  /* Colors */
+  --navy:       #00204a;
+  --sage:       #7c9473;
+  --champagne:  #e8d5b5;
+  --gold:       #dcaf61;
+  --gold-dark:  #b8873a;
+  --off-white:  #f1efeb;
+  --terracotta: #b9694a;
+  --white:      #ffffff;
+
+  /* Semantic */
+  --color-bg:        var(--off-white);
+  --color-surface:   var(--white);
+  --color-primary:   var(--navy);
+  --color-accent:    var(--gold);
+  --color-success:   var(--sage);
+  --color-warning:   var(--terracotta);
+  --color-border:    #ddd8d0;
+  --color-text:      #1a1a1a;
+  --color-text-sub:  #6b6560;
+
+  /* Typography */
+  --font-heading: 'Playfair Display', Georgia, serif;
+  --font-body:    'Jost', 'Segoe UI', sans-serif;
+
+  /* Spacing */
+  --space-xs:  4px;
+  --space-sm:  8px;
+  --space-md:  16px;
+  --space-lg:  24px;
+  --space-xl:  32px;
+  --space-2xl: 48px;
+
+  /* Radii */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  /* Shadows */
+  --shadow-card: 0 2px 8px rgba(0,0,0,0.08);
+  --shadow-modal: 0 8px 32px rgba(0,0,0,0.18);
+
+  /* Sidebar */
+  --sidebar-width: 220px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-body);
+  font-weight: 400;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+h1, h2, h3 { font-family: var(--font-heading); }
