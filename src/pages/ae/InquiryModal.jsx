@@ -1,17 +1,29 @@
 import { useState } from 'react';
+import { api } from '../../api/client';
 
-export default function InquiryModal({ onClose }) {
+export default function InquiryModal({ onClose, onSaved }) {
   const [form, setForm] = useState({
     clientName: '', contact: '', eventDate: '',
     eventType: 'wedding', venue: '', ceremony: 'church', notes: false,
   });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert(`Inquiry for "${form.clientName}" saved! Status defaults to Warm.`);
-    onClose();
+    setSaving(true);
+    setError('');
+    try {
+      await api.createEvent(form);
+      onSaved?.();
+      onClose();
+    } catch (err) {
+      setError(err.message || 'Could not save inquiry');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -63,9 +75,12 @@ export default function InquiryModal({ onClose }) {
           <p style={{ fontSize: 11, color: 'var(--color-text-sub)', marginTop: 4 }}>
             New lead status defaults to <strong>Warm</strong> on save — change it manually from the pipeline view.
           </p>
+          {error && <p style={{ color: 'var(--terracotta)', fontSize: 12 }}>{error}</p>}
           <div className="modal-actions">
             <button type="button" className="btn btn-secondary" onClick={onClose}>Cancel</button>
-            <button type="submit" className="btn btn-primary">Save Inquiry</button>
+            <button type="submit" className="btn btn-primary" disabled={saving}>
+              {saving ? 'Saving…' : 'Save Inquiry'}
+            </button>
           </div>
         </form>
       </div>

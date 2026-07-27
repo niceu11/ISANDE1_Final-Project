@@ -7,8 +7,8 @@ const NAV_ITEMS = {
     { label: 'Dashboard',  path: '/ae/dashboard' },
     { label: 'Inquiries',  path: '/ae/inquiries' },
     { label: 'Calendar',   path: '/ae/calendar' },
-    { label: 'Clients',    path: '/ae/clients/1' },
-    { label: 'Payments',   path: '/ae/payments/1' },
+    { label: 'Clients',    path: '/ae/clients' },
+    { label: 'Payments',   path: '/ae/payments' },
   ],
   manager: [
     { label: 'Dashboard',  path: '/manager/dashboard' },

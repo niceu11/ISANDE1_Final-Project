@@ -1,20 +1,36 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ShieldCrest from '../components/ShieldCrest';
+import { api } from '../api/client';
 import './Login.css';
+
+const ROLE_ROUTES = {
+  ae: '/ae/dashboard',
+  manager: '/manager/dashboard',
+  ceo: '/ceo/dashboard',
+  staff: '/staff/event-day',
+};
 
 export default function Login() {
   const navigate = useNavigate();
-  const [role, setRole] = useState('ae');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (role === 'ae')      navigate('/ae/dashboard');
-    if (role === 'manager') navigate('/manager/dashboard');
-    if (role === 'ceo')     navigate('/ceo/dashboard');
-    if (role === 'staff')   navigate('/staff/event-day');
+    setError('');
+    setLoading(true);
+    try {
+      const user = await api.login(email, password);
+      localStorage.setItem('soiree-user', JSON.stringify(user));
+      navigate(ROLE_ROUTES[user.role] ?? '/login');
+    } catch (err) {
+      setError(err.message || 'Login failed');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -35,6 +51,7 @@ export default function Login() {
               placeholder="you@soireeeventsplace.com"
               value={email}
               onChange={e => setEmail(e.target.value)}
+              required
             />
           </div>
           <div className="form-group">
@@ -45,25 +62,16 @@ export default function Login() {
               placeholder="••••••••"
               value={password}
               onChange={e => setPassword(e.target.value)}
+              required
             />
           </div>
 
-          <div className="form-group login-role-group">
-            <label className="form-label">Sign in as</label>
-            <select
-              className="form-select"
-              value={role}
-              onChange={e => setRole(e.target.value)}
-            >
-              <option value="ae">Account Executive</option>
-              <option value="manager">Events Manager</option>
-              <option value="ceo">CEO</option>
-              <option value="staff">On-site Staff</option>
-            </select>
-          </div>
+          {error && (
+            <p style={{ color: 'var(--terracotta)', fontSize: 13, marginTop: -8 }}>{error}</p>
+          )}
 
-          <button className="btn btn-primary login-btn" type="submit">
-            Sign In
+          <button className="btn btn-primary login-btn" type="submit" disabled={loading}>
+            {loading ? 'Signing in…' : 'Sign In'}
           </button>
         </form>
 

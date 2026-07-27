@@ -21,7 +21,9 @@ export default function App() {
         <Route path="/ae/dashboard"    element={<AEDashboard />} />
         <Route path="/ae/inquiries"    element={<Inquiries />} />
         <Route path="/ae/calendar"     element={<CalendarPage />} />
+        <Route path="/ae/clients"      element={<ClientProfile />} />
         <Route path="/ae/clients/:id"  element={<ClientProfile />} />
+        <Route path="/ae/payments"     element={<PaymentTracker />} />
         <Route path="/ae/payments/:id" element={<PaymentTracker />} />
 
         <Route path="/manager/dashboard" element={<ManagerDashboard />} />
