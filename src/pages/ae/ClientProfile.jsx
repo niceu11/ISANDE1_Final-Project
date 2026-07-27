@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Sidebar from '../../components/Sidebar';
+import AppLayout from '../../components/AppLayout';
 import Card from '../../components/Card';
 import Badge from '../../components/Badge';
 import { api, formatCurrency, formatDate } from '../../api/client';
@@ -32,9 +32,7 @@ export default function ClientProfile() {
   }, [id]);
 
   return (
-    <div className="app-shell">
-      <Sidebar role="ae" />
-      <main className="main-content">
+    <AppLayout role="ae">
         {loading && <p style={{ color: 'var(--color-text-sub)' }}>Loading…</p>}
         {error && <p style={{ color: 'var(--terracotta)' }}>{error}</p>}
 
@@ -117,7 +115,6 @@ export default function ClientProfile() {
             </Card>
           </>
         )}
-      </main>
-    </div>
+    </AppLayout>
   );
 }

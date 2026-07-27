@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import Sidebar from '../components/Sidebar';
+import AppLayout from '../components/AppLayout';
 import Card from '../components/Card';
 import Badge from '../components/Badge';
 import { getCurrentUser } from '../components/RequireAuth';
@@ -69,9 +69,7 @@ export default function Reports() {
   const maxMonthCount = Math.max(1, ...monthEntries.map(([, c]) => c));
 
   return (
-    <div className="app-shell">
-      <Sidebar role={role} />
-      <main className="main-content">
+    <AppLayout role={role}>
         <div className="page-header">
           <div>
             <h1 className="page-title">Reports &amp; Analytics</h1>
@@ -159,7 +157,6 @@ export default function Reports() {
             </Card>
           </>
         )}
-      </main>
-    </div>
+    </AppLayout>
   );
 }

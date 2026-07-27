@@ -1,31 +1,30 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import ShieldCrest from './ShieldCrest';
-import NotificationBell from './NotificationBell';
 import { getCurrentUser } from './RequireAuth';
 import './Sidebar.css';
 
 const NAV_ITEMS = {
   ae: [
-    { label: 'Dashboard',  path: '/ae/dashboard' },
-    { label: 'Inquiries',  path: '/ae/inquiries' },
-    { label: 'Calendar',   path: '/calendar' },
-    { label: 'Clients',    path: '/ae/clients' },
-    { label: 'Payments',   path: '/ae/payments' },
+    { label: 'Dashboard',  path: '/ae/dashboard', icon: '◆' },
+    { label: 'Inquiries',  path: '/ae/inquiries', icon: '✉' },
+    { label: 'Calendar',   path: '/calendar',     icon: '◷' },
+    { label: 'Clients',    path: '/ae/clients',   icon: '◎' },
+    { label: 'Payments',   path: '/ae/payments',  icon: '◈' },
   ],
   manager: [
-    { label: 'Dashboard',  path: '/manager/dashboard' },
-    { label: 'Calendar',   path: '/calendar' },
-    { label: 'Reports',    path: '/reports' },
+    { label: 'Dashboard',  path: '/manager/dashboard', icon: '◆' },
+    { label: 'Calendar',   path: '/calendar',          icon: '◷' },
+    { label: 'Reports',    path: '/reports',           icon: '▤' },
   ],
   ceo: [
-    { label: 'Dashboard',  path: '/ceo/dashboard' },
-    { label: 'Calendar',   path: '/calendar' },
-    { label: 'Reports',    path: '/reports' },
+    { label: 'Dashboard',  path: '/ceo/dashboard', icon: '◆' },
+    { label: 'Calendar',   path: '/calendar',      icon: '◷' },
+    { label: 'Reports',    path: '/reports',       icon: '▤' },
   ],
   staff: [
-    { label: 'Dashboard',  path: '/staff/dashboard' },
-    { label: 'Calendar',   path: '/calendar' },
-    { label: 'Event Day',  path: '/staff/event-day' },
+    { label: 'Dashboard',  path: '/staff/dashboard', icon: '◆' },
+    { label: 'Calendar',   path: '/calendar',        icon: '◷' },
+    { label: 'Event Day',  path: '/staff/event-day', icon: '✦' },
   ],
 };
 
@@ -59,10 +58,6 @@ export default function Sidebar({ role }) {
         </div>
       </div>
 
-      <div className="sidebar-tools">
-        <NotificationBell />
-      </div>
-
       <nav className="sidebar-nav">
         {items.map((item) => (
           <NavLink
@@ -72,6 +67,7 @@ export default function Sidebar({ role }) {
               'sidebar-link' + (isActive ? ' active' : '')
             }
           >
+            <span className="sidebar-link-icon">{item.icon}</span>
             {item.label}
           </NavLink>
         ))}

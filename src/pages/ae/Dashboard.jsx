@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import Sidebar from '../../components/Sidebar';
+import AppLayout from '../../components/AppLayout';
 import Card from '../../components/Card';
 import Badge from '../../components/Badge';
 import InquiryModal from './InquiryModal';
@@ -53,9 +53,7 @@ export default function AEDashboard() {
   });
 
   return (
-    <div className="app-shell">
-      <Sidebar role="ae" />
-      <main className="main-content">
+    <AppLayout role="ae">
         <div className="page-header">
           <div>
             <h1 className="page-title">Good morning, {currentUserName()}.</h1>
@@ -134,7 +132,6 @@ export default function AEDashboard() {
         )}
 
         {showModal && <InquiryModal onClose={() => setShowModal(false)} onSaved={load} />}
-      </main>
-    </div>
+    </AppLayout>
   );
 }

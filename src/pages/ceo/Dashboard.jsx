@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Sidebar from '../../components/Sidebar';
+import AppLayout from '../../components/AppLayout';
 import Card from '../../components/Card';
 import Badge from '../../components/Badge';
 import Calendar from '../../components/Calendar';
@@ -62,9 +62,7 @@ export default function CEODashboard() {
   ];
 
   return (
-    <div className="app-shell">
-      <Sidebar role="ceo" />
-      <main className="main-content">
+    <AppLayout role="ceo">
         <div className="page-header">
           <div>
             <h1 className="page-title">Good morning, {currentUserName()}.</h1>
@@ -127,7 +125,6 @@ export default function CEODashboard() {
             </Card>
           </>
         )}
-      </main>
-    </div>
+    </AppLayout>
   );
 }

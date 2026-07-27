@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Sidebar from '../../components/Sidebar';
+import AppLayout from '../../components/AppLayout';
 import Card from '../../components/Card';
 import Badge from '../../components/Badge';
 import { getCurrentUser } from '../../components/RequireAuth';
@@ -37,9 +37,7 @@ export default function StaffDashboard() {
   const totalSuppliers = featured?.suppliers?.length ?? 0;
 
   return (
-    <div className="app-shell">
-      <Sidebar role="staff" />
-      <main className="main-content">
+    <AppLayout role="staff">
         <div className="page-header">
           <div>
             <h1 className="page-title">Welcome, {firstName()}.</h1>
@@ -93,7 +91,6 @@ export default function StaffDashboard() {
             </div>
           </>
         )}
-      </main>
-    </div>
+    </AppLayout>
   );
 }

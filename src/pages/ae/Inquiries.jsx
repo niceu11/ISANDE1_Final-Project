@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Sidebar from '../../components/Sidebar';
+import AppLayout from '../../components/AppLayout';
 import Badge from '../../components/Badge';
 import InquiryModal from './InquiryModal';
 import { api, formatDate } from '../../api/client';
@@ -48,9 +48,7 @@ export default function Inquiries() {
   const filtered = events.filter(i => statusFilter === 'all' || i.status === statusFilter);
 
   return (
-    <div className="app-shell">
-      <Sidebar role="ae" />
-      <main className="main-content">
+    <AppLayout role="ae">
         <div className="page-header">
           <h1 className="page-title">Inquiry Management</h1>
           <button className="btn btn-primary" onClick={() => setShowModal(true)}>
@@ -130,7 +128,6 @@ export default function Inquiries() {
         </div>
 
         {showModal && <InquiryModal onClose={() => setShowModal(false)} onSaved={load} />}
-      </main>
-    </div>
+    </AppLayout>
   );
 }

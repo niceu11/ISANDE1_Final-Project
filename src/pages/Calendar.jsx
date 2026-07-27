@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import Sidebar from '../components/Sidebar';
+import AppLayout from '../components/AppLayout';
 import Calendar from '../components/Calendar';
 import Card from '../components/Card';
 import Badge from '../components/Badge';
@@ -46,9 +46,7 @@ export default function CalendarPage() {
     .slice(0, 6);
 
   return (
-    <div className="app-shell">
-      <Sidebar role={role} />
-      <main className="main-content">
+    <AppLayout role={role}>
         <div className="page-header">
           <div>
             <h1 className="page-title">Booking Calendar</h1>
@@ -79,7 +77,6 @@ export default function CalendarPage() {
             </Card>
           </div>
         )}
-      </main>
-    </div>
+    </AppLayout>
   );
 }

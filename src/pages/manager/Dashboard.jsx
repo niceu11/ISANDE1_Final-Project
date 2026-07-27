@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import Sidebar from '../../components/Sidebar';
+import AppLayout from '../../components/AppLayout';
 import Card from '../../components/Card';
 import Badge from '../../components/Badge';
 import Calendar from '../../components/Calendar';
@@ -83,9 +83,7 @@ export default function ManagerDashboard() {
   });
 
   return (
-    <div className="app-shell">
-      <Sidebar role="manager" />
-      <main className="main-content">
+    <AppLayout role="manager">
         <div className="page-header">
           <div>
             <h1 className="page-title">Good morning, {currentUserName()}.</h1>
@@ -140,7 +138,6 @@ export default function ManagerDashboard() {
             </div>
           </>
         )}
-      </main>
-    </div>
+    </AppLayout>
   );
 }
