@@ -1,5 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import ShieldCrest from './ShieldCrest';
+import { getCurrentUser } from './RequireAuth';
 import './Sidebar.css';
 
 const NAV_ITEMS = {
@@ -12,9 +13,11 @@ const NAV_ITEMS = {
   ],
   manager: [
     { label: 'Dashboard',  path: '/manager/dashboard' },
+    { label: 'Reports',    path: '/reports' },
   ],
   ceo: [
     { label: 'Dashboard',  path: '/ceo/dashboard' },
+    { label: 'Reports',    path: '/reports' },
   ],
 };
 
@@ -26,8 +29,16 @@ const ROLE_LABELS = {
 
 export default function Sidebar({ role }) {
   const items = NAV_ITEMS[role] ?? [];
-  const user  = ROLE_LABELS[role] ?? { name: role, title: '' };
+  const sessionUser = getCurrentUser();
+  const user = sessionUser?.role === role
+    ? { name: sessionUser.name, title: sessionUser.title }
+    : (ROLE_LABELS[role] ?? { name: role, title: '' });
   const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem('soiree-user');
+    navigate('/login');
+  };
 
   return (
     <aside className="sidebar">
@@ -65,7 +76,7 @@ export default function Sidebar({ role }) {
         </div>
         <button
           className="sidebar-logout"
-          onClick={() => navigate('/login')}
+          onClick={handleLogout}
         >
           Log out
         </button>

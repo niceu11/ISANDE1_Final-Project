@@ -33,7 +33,7 @@ export const api = {
 
 export function formatCurrency(amount) {
   if (amount == null) return '—';
-  return `₱${Number(amount).toLocaleString('en-PH')}`;
+  return `₱${Math.round(Number(amount)).toLocaleString('en-PH')}`;
 }
 
 export function formatDate(dateStr, opts = { month: 'short', day: 'numeric', year: 'numeric' }) {
