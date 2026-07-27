@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api, formatDate } from '../../api/client';
 import './EventDay.css';
 
 export default function EventDay() {
+  const navigate = useNavigate();
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -22,6 +24,7 @@ export default function EventDay() {
       <div className="event-day-container">
         {/* Header */}
         <div className="event-day-header">
+          <button className="event-day-back" onClick={() => navigate('/staff/dashboard')}>← Dashboard</button>
           <div className="event-day-brand">Soirée Hub · Event Day View</div>
           <div className="event-day-date">{formatDate(event.eventDate, { month: 'long', day: 'numeric', year: 'numeric' })}</div>
         </div>

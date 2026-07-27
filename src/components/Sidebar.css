@@ -38,6 +38,12 @@
   margin-top: 2px;
 }
 
+.sidebar-tools {
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 20px 0;
+}
+
 .sidebar-nav {
   display: flex;
   flex-direction: column;

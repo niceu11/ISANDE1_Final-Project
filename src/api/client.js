@@ -29,6 +29,12 @@ export const api = {
   getPaymentByEvent: (eventId) => request(`/payments/event/${eventId}`),
   verifyPayment: (eventId, field) =>
     request(`/payments/event/${eventId}/verify`, { method: 'PATCH', body: JSON.stringify({ field }) }),
+
+  getCalendarNotes: () => request('/calendar-notes'),
+  createCalendarNote: (payload) =>
+    request('/calendar-notes', { method: 'POST', body: JSON.stringify(payload) }),
+  deleteCalendarNote: (id) =>
+    request(`/calendar-notes/${id}`, { method: 'DELETE' }),
 };
 
 export function formatCurrency(amount) {

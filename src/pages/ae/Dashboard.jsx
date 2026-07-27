@@ -4,6 +4,7 @@ import Card from '../../components/Card';
 import Badge from '../../components/Badge';
 import InquiryModal from './InquiryModal';
 import { api, formatCurrency, formatDate, daysOverdue } from '../../api/client';
+import { usePolling } from '../../hooks/usePolling';
 
 function currentUserName() {
   try {
@@ -20,8 +21,8 @@ export default function AEDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const load = () => {
-    setLoading(true);
+  const load = (silent = false) => {
+    if (!silent) setLoading(true);
     Promise.all([api.getEvents(), api.getPayments()])
       .then(([ev, pay]) => { setEvents(ev); setPayments(pay); setError(''); })
       .catch(err => setError(err.message))
@@ -29,6 +30,7 @@ export default function AEDashboard() {
   };
 
   useEffect(load, []);
+  usePolling(() => load(true));
 
   const leadCounts = { hot: 0, warm: 0, cold: 0 };
   events.forEach(e => { if (leadCounts[e.status] !== undefined) leadCounts[e.status] += 1; });

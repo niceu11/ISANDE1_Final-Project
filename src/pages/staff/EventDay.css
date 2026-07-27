@@ -30,6 +30,19 @@
   color: var(--color-text-sub);
 }
 
+.event-day-back {
+  background: none;
+  border: none;
+  color: var(--color-text-sub);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.event-day-back:hover {
+  color: var(--navy);
+}
+
 .event-hero-card {
   background: var(--navy);
   border-radius: var(--radius-lg);

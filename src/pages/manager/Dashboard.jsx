@@ -3,31 +3,32 @@ import Sidebar from '../../components/Sidebar';
 import Card from '../../components/Card';
 import Badge from '../../components/Badge';
 import Calendar from '../../components/Calendar';
+import { getCurrentUser } from '../../components/RequireAuth';
 import { api, formatCurrency, formatDate, daysOverdue } from '../../api/client';
+import { usePolling } from '../../hooks/usePolling';
 
 function currentUserName() {
-  try {
-    return JSON.parse(localStorage.getItem('soiree-user'))?.name?.split(' ').pop() ?? 'there';
-  } catch {
-    return 'there';
-  }
+  return getCurrentUser()?.name?.split(' ').pop() ?? 'there';
 }
 
 export default function ManagerDashboard() {
+  const user = getCurrentUser();
   const [events, setEvents] = useState([]);
   const [payments, setPayments] = useState([]);
+  const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const load = () => {
-    setLoading(true);
-    Promise.all([api.getEvents(), api.getPayments()])
-      .then(([ev, pay]) => { setEvents(ev); setPayments(pay); setError(''); })
+  const load = (silent = false) => {
+    if (!silent) setLoading(true);
+    Promise.all([api.getEvents(), api.getPayments(), api.getCalendarNotes()])
+      .then(([ev, pay, calendarNotes]) => { setEvents(ev); setPayments(pay); setNotes(calendarNotes); setError(''); })
       .catch(err => setError(err.message))
       .finally(() => setLoading(false));
   };
 
   useEffect(load, []);
+  usePolling(() => load(true));
 
   const handleVerify = async (eventId, field) => {
     try {
@@ -36,6 +37,17 @@ export default function ManagerDashboard() {
     } catch (err) {
       alert(err.message || 'Could not verify payment');
     }
+  };
+
+  const handleAddNote = async (date, text, type) => {
+    await api.createCalendarNote({
+      date,
+      text,
+      type,
+      createdBy: user?.name ?? '',
+      createdByRole: 'manager',
+    });
+    load(true);
   };
 
   const calendarEvents = events
@@ -90,7 +102,7 @@ export default function ManagerDashboard() {
           <>
             {/* Calendar hero */}
             <div style={{ marginBottom: 28 }}>
-              <Calendar events={calendarEvents} />
+              <Calendar events={calendarEvents} notes={notes} onAddNote={handleAddNote} />
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>

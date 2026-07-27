@@ -3,6 +3,7 @@ import cors from 'cors';
 import authRoutes from './routes/auth.js';
 import eventRoutes from './routes/events.js';
 import paymentRoutes from './routes/payments.js';
+import calendarNoteRoutes from './routes/calendarNotes.js';
 
 const app = express();
 
@@ -13,6 +14,7 @@ app.get('/api/health', (req, res) => res.json({ ok: true }));
 app.use('/api/auth', authRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/calendar-notes', calendarNoteRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err);

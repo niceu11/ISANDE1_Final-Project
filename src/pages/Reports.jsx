@@ -4,6 +4,7 @@ import Card from '../components/Card';
 import Badge from '../components/Badge';
 import { getCurrentUser } from '../components/RequireAuth';
 import { api, formatCurrency } from '../api/client';
+import { usePolling } from '../hooks/usePolling';
 
 const STATUS_ORDER = ['hot', 'warm', 'cold', 'pencil', 'confirmed'];
 const STATUS_LABEL = { hot: 'Hot', warm: 'Warm', cold: 'Cold', pencil: 'Pencil', confirmed: 'Confirmed' };
@@ -16,12 +17,16 @@ export default function Reports() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
+  const load = (silent = false) => {
+    if (!silent) setLoading(true);
     Promise.all([api.getEvents(), api.getPayments()])
       .then(([ev, pay]) => { setEvents(ev); setPayments(pay); setError(''); })
       .catch(err => setError(err.message))
       .finally(() => setLoading(false));
-  }, []);
+  };
+
+  useEffect(load, []);
+  usePolling(() => load(true));
 
   // --- Revenue & outstanding ---
   let totalRevenue = 0;

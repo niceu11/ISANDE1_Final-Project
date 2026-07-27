@@ -4,25 +4,39 @@ import Sidebar from '../../components/Sidebar';
 import Badge from '../../components/Badge';
 import InquiryModal from './InquiryModal';
 import { api, formatDate } from '../../api/client';
+import { usePolling } from '../../hooks/usePolling';
 
 export default function Inquiries() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [dateFilter, setDateFilter]     = useState('all');
   const [showModal, setShowModal]       = useState(false);
   const [events, setEvents] = useState([]);
+  const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const load = () => {
-    setLoading(true);
+  const load = (silent = false) => {
+    if (!silent) setLoading(true);
     api.getEvents()
-      .then(data => { setEvents(data); setError(''); })
+      .then(data => {
+        setEvents(prev => {
+          if (!silent || !editingId) return data;
+          // Don't clobber a quick-note the user is actively typing during a background poll.
+          return data.map(e => {
+            if (e._id !== editingId) return e;
+            const existing = prev.find(p => p._id === editingId);
+            return existing ? { ...e, quickNote: existing.quickNote } : e;
+          });
+        });
+        setError('');
+      })
       .catch(err => setError(err.message))
       .finally(() => setLoading(false));
   };
 
   useEffect(load, []);
+  usePolling(() => load(true));
 
   const setNote = (id, value) =>
     setEvents(rows => rows.map(r => (r._id === id ? { ...r, quickNote: value } : r)));
@@ -89,8 +103,9 @@ export default function Inquiries() {
                       style={{ padding: '5px 8px', fontSize: 12, minWidth: 140 }}
                       placeholder="Add note..."
                       value={row.quickNote ?? ''}
+                      onFocus={() => setEditingId(row._id)}
                       onChange={e => setNote(row._id, e.target.value)}
-                      onBlur={e => saveNote(row._id, e.target.value)}
+                      onBlur={e => { saveNote(row._id, e.target.value); setEditingId(null); }}
                     />
                   </td>
                   <td>
