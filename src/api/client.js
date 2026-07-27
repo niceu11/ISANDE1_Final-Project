@@ -21,6 +21,8 @@ export const api = {
   getEvent: (id) => request(`/events/${id}`),
   createEvent: (payload) =>
     request('/events', { method: 'POST', body: JSON.stringify(payload) }),
+  updateQuickNote: (id, quickNote) =>
+    request(`/events/${id}/quick-note`, { method: 'PATCH', body: JSON.stringify({ quickNote }) }),
 
   getPayments: () => request('/payments'),
   getFeaturedPayment: () => request('/payments/featured'),

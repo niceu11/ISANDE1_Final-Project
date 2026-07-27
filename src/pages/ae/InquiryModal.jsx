@@ -29,7 +29,7 @@ export default function InquiryModal({ onClose, onSaved }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-box" onClick={e => e.stopPropagation()}>
-        <h2 className="modal-title">New Inquiry</h2>
+        <h2 className="modal-title">Add inquiry</h2>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label className="form-label">Client Name</label>
@@ -79,7 +79,7 @@ export default function InquiryModal({ onClose, onSaved }) {
           <div className="modal-actions">
             <button type="button" className="btn btn-secondary" onClick={onClose}>Cancel</button>
             <button type="submit" className="btn btn-primary" disabled={saving}>
-              {saving ? 'Saving…' : 'Save Inquiry'}
+              {saving ? 'Saving…' : 'Save inquiry'}
             </button>
           </div>
         </form>

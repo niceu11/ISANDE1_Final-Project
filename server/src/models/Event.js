@@ -29,6 +29,7 @@ const eventSchema = new mongoose.Schema({
   followupsTotal: { type: Number, default: 3 },
   lastActivityAt: { type: Date, default: Date.now },
   notes: [noteSchema],
+  quickNote: { type: String, default: '' },
   suppliers: [supplierSchema],
   instructions: [String],
   featured: { type: Boolean, default: false },

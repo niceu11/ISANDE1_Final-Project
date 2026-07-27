@@ -24,6 +24,13 @@ export default function Inquiries() {
 
   useEffect(load, []);
 
+  const setNote = (id, value) =>
+    setEvents(rows => rows.map(r => (r._id === id ? { ...r, quickNote: value } : r)));
+
+  const saveNote = (id, value) => {
+    api.updateQuickNote(id, value).catch(err => setError(err.message));
+  };
+
   const filtered = events.filter(i => statusFilter === 'all' || i.status === statusFilter);
 
   return (
@@ -31,9 +38,9 @@ export default function Inquiries() {
       <Sidebar role="ae" />
       <main className="main-content">
         <div className="page-header">
-          <h1 className="page-title">Inquiries</h1>
+          <h1 className="page-title">Inquiry Management</h1>
           <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-            + Add Inquiry
+            + Add inquiry
           </button>
         </div>
 
@@ -64,6 +71,7 @@ export default function Inquiries() {
                 <th>Status</th>
                 <th>Last Activity</th>
                 <th>Follow-ups</th>
+                <th>Notes</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -76,6 +84,16 @@ export default function Inquiries() {
                   <td style={{ color: 'var(--color-text-sub)' }}>{formatDate(row.lastActivityAt, { month: 'short', day: 'numeric' })}</td>
                   <td>{row.followupsCompleted} of {row.followupsTotal}</td>
                   <td>
+                    <input
+                      className="form-input"
+                      style={{ padding: '5px 8px', fontSize: 12, minWidth: 140 }}
+                      placeholder="Add note..."
+                      value={row.quickNote ?? ''}
+                      onChange={e => setNote(row._id, e.target.value)}
+                      onBlur={e => saveNote(row._id, e.target.value)}
+                    />
+                  </td>
+                  <td>
                     <button className="btn btn-secondary" style={{ padding: '5px 12px', fontSize: 12 }}
                       onClick={() => navigate(`/ae/clients/${row._id}`)}>
                       View
@@ -84,7 +102,7 @@ export default function Inquiries() {
                 </tr>
               ))}
               {filtered.length === 0 && (
-                <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--color-text-sub)', padding: 32 }}>No inquiries found.</td></tr>
+                <tr><td colSpan={7} style={{ textAlign: 'center', color: 'var(--color-text-sub)', padding: 32 }}>No inquiries found.</td></tr>
               )}
             </tbody>
           </table>

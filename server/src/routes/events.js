@@ -21,6 +21,13 @@ router.get('/:id', asyncHandler(async (req, res) => {
   res.json(event);
 }));
 
+router.patch('/:id/quick-note', asyncHandler(async (req, res) => {
+  const { quickNote } = req.body;
+  const event = await Event.findByIdAndUpdate(req.params.id, { quickNote }, { new: true });
+  if (!event) return res.status(404).json({ error: 'Event not found' });
+  res.json(event);
+}));
+
 router.post('/', asyncHandler(async (req, res) => {
   const { clientName, contact, eventDate, eventType, venue, ceremony, notes } = req.body;
   const event = await Event.create({
