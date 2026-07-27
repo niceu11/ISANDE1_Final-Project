@@ -1,12 +1,13 @@
 .sidebar {
   width: var(--sidebar-width);
-  min-height: 100vh;
+  height: 100vh;
   background: linear-gradient(165deg, var(--navy) 0%, #001430 100%);
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
   position: sticky;
   top: 0;
+  overflow-y: auto;
 }
 
 .sidebar-brand {
