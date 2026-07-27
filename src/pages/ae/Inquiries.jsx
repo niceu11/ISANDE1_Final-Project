@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import AppLayout from '../../components/AppLayout';
 import Badge from '../../components/Badge';
 import InquiryModal from './InquiryModal';
-import { api, formatDate } from '../../api/client';
+import { api, formatDate, buildFollowUpMessage, openSmsComposer } from '../../api/client';
 import { usePolling } from '../../hooks/usePolling';
+import { getCurrentUser } from '../../components/RequireAuth';
 
 export default function Inquiries() {
   const [statusFilter, setStatusFilter] = useState('all');
@@ -43,6 +44,21 @@ export default function Inquiries() {
 
   const saveNote = (id, value) => {
     api.updateQuickNote(id, value).catch(err => setError(err.message));
+  };
+
+  const user = getCurrentUser();
+  const handleTextFollowUp = async (row) => {
+    if (!row.contact) {
+      alert(`No phone number on file for ${row.clientName}.`);
+      return;
+    }
+    openSmsComposer(row.contact, buildFollowUpMessage(row, user?.name));
+    try {
+      await api.logFollowUp(row._id, 'sms', user?.name, user?.role);
+      load(true);
+    } catch {
+      // SMS composer already opened; logging failure isn't worth blocking the user over.
+    }
   };
 
   const filtered = events.filter(i => statusFilter === 'all' || i.status === statusFilter);
@@ -107,10 +123,17 @@ export default function Inquiries() {
                     />
                   </td>
                   <td>
-                    <button className="btn btn-secondary" style={{ padding: '5px 12px', fontSize: 12 }}
-                      onClick={() => navigate(`/ae/clients/${row._id}`)}>
-                      View
-                    </button>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button className="btn btn-secondary" style={{ padding: '5px 12px', fontSize: 12 }}
+                        onClick={() => navigate(`/ae/clients/${row._id}`)}>
+                        View
+                      </button>
+                      <button className="btn btn-secondary" style={{ padding: '5px 12px', fontSize: 12 }}
+                        onClick={() => handleTextFollowUp(row)}
+                        title={`Text ${row.clientName} privately (not via Messenger/social)`}>
+                        Text
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

@@ -3,15 +3,12 @@ import AppLayout from '../../components/AppLayout';
 import Card from '../../components/Card';
 import Badge from '../../components/Badge';
 import InquiryModal from './InquiryModal';
-import { api, formatCurrency, formatDate, daysOverdue } from '../../api/client';
+import { api, formatCurrency, formatDate, daysOverdue, buildFollowUpMessage, openSmsComposer } from '../../api/client';
 import { usePolling } from '../../hooks/usePolling';
+import { getCurrentUser } from '../../components/RequireAuth';
 
 function currentUserName() {
-  try {
-    return JSON.parse(localStorage.getItem('soiree-user'))?.name?.split(' ').pop() ?? 'there';
-  } catch {
-    return 'there';
-  }
+  return getCurrentUser()?.name?.split(' ').pop() ?? 'there';
 }
 
 export default function AEDashboard() {
@@ -51,6 +48,21 @@ export default function AEDashboard() {
       }
     });
   });
+
+  const user = getCurrentUser();
+  const handleTextFollowUp = async (event) => {
+    if (!event.contact) {
+      alert(`No phone number on file for ${event.clientName}.`);
+      return;
+    }
+    openSmsComposer(event.contact, buildFollowUpMessage(event, user?.name));
+    try {
+      await api.logFollowUp(event._id, 'sms', user?.name, user?.role);
+      load(true);
+    } catch {
+      // SMS composer already opened; logging failure isn't worth blocking the user over.
+    }
+  };
 
   return (
     <AppLayout role="ae">
@@ -92,7 +104,17 @@ export default function AEDashboard() {
                       <div style={{ fontWeight: 500, fontSize: 13 }}>{f.clientName}</div>
                       <div style={{ fontSize: 11, color: 'var(--color-text-sub)' }}>{f.eventType} · {formatDate(f.eventDate)}</div>
                     </div>
-                    <Badge variant={f.status} />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <Badge variant={f.status} />
+                      <button
+                        className="btn btn-secondary"
+                        style={{ padding: '4px 10px', fontSize: 11 }}
+                        onClick={() => handleTextFollowUp(f)}
+                        title={`Text ${f.clientName} privately (not via Messenger/social)`}
+                      >
+                        Text
+                      </button>
+                    </div>
                   </div>
                 ))}
               </Card>

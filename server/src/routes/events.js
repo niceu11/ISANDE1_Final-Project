@@ -28,6 +28,25 @@ router.patch('/:id/quick-note', asyncHandler(async (req, res) => {
   res.json(event);
 }));
 
+const FOLLOWUP_LABEL = { sms: 'text message', call: 'phone call', email: 'email' };
+
+router.patch('/:id/follow-up', asyncHandler(async (req, res) => {
+  const { method = 'sms', author = '', authorRole = '' } = req.body;
+  const event = await Event.findById(req.params.id);
+  if (!event) return res.status(404).json({ error: 'Event not found' });
+
+  const label = FOLLOWUP_LABEL[method] ?? method;
+  event.notes.unshift({
+    date: new Date(),
+    author: author || authorRole || 'System',
+    text: `Follow-up sent via ${label}.`,
+  });
+  event.followupsCompleted = Math.min(event.followupsCompleted + 1, event.followupsTotal);
+  event.lastActivityAt = new Date();
+  await event.save();
+  res.json(event);
+}));
+
 router.post('/', asyncHandler(async (req, res) => {
   const { clientName, contact, eventDate, eventType, venue, ceremony, notes } = req.body;
   const event = await Event.create({
