@@ -63,10 +63,16 @@
 }
 
 .sidebar-link-icon {
-  font-size: 13px;
-  width: 16px;
-  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 17px;
+  flex-shrink: 0;
   opacity: 0.75;
+}
+
+.sidebar-link-icon svg {
+  transition: transform 0.15s ease;
 }
 
 .sidebar-link:hover {
@@ -149,8 +155,8 @@
 }
 
 .sidebar-logout-icon {
-  font-size: 13px;
-  line-height: 1;
+  display: inline-flex;
+  align-items: center;
 }
 
 .sidebar-logout:hover {
@@ -193,7 +199,12 @@
   }
 
   .sidebar-link-icon {
-    font-size: 16px;
+    width: 19px;
+  }
+
+  .sidebar-link-icon svg {
+    width: 19px;
+    height: 19px;
   }
 
   .sidebar-footer {

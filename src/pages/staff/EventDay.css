@@ -95,6 +95,17 @@
   color: rgba(255,255,255,0.8);
 }
 
+.event-hero-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.event-hero-meta svg {
+  opacity: 0.85;
+  flex-shrink: 0;
+}
+
 .event-section { margin-bottom: 28px; }
 
 .event-section-title {

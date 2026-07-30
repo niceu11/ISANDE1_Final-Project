@@ -1,30 +1,34 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import ShieldCrest from './ShieldCrest';
 import { getCurrentUser } from './RequireAuth';
+import {
+  DashboardIcon, InquiriesIcon, CalendarIcon, ClientsIcon,
+  PaymentsIcon, ReportsIcon, EventDayIcon, LogoutIcon,
+} from './icons/NavIcons';
 import './Sidebar.css';
 
 const NAV_ITEMS = {
   ae: [
-    { label: 'Dashboard',  path: '/ae/dashboard', icon: '◆' },
-    { label: 'Inquiries',  path: '/ae/inquiries', icon: '✉' },
-    { label: 'Calendar',   path: '/calendar',     icon: '◷' },
-    { label: 'Clients',    path: '/ae/clients',   icon: '◎' },
-    { label: 'Payments',   path: '/ae/payments',  icon: '◈' },
+    { label: 'Dashboard',  path: '/ae/dashboard', Icon: DashboardIcon },
+    { label: 'Inquiries',  path: '/ae/inquiries', Icon: InquiriesIcon },
+    { label: 'Calendar',   path: '/calendar',     Icon: CalendarIcon },
+    { label: 'Clients',    path: '/ae/clients',   Icon: ClientsIcon },
+    { label: 'Payments',   path: '/ae/payments',  Icon: PaymentsIcon },
   ],
   manager: [
-    { label: 'Dashboard',  path: '/manager/dashboard', icon: '◆' },
-    { label: 'Calendar',   path: '/calendar',          icon: '◷' },
-    { label: 'Reports',    path: '/reports',           icon: '▤' },
+    { label: 'Dashboard',  path: '/manager/dashboard', Icon: DashboardIcon },
+    { label: 'Calendar',   path: '/calendar',          Icon: CalendarIcon },
+    { label: 'Reports',    path: '/reports',           Icon: ReportsIcon },
   ],
   ceo: [
-    { label: 'Dashboard',  path: '/ceo/dashboard', icon: '◆' },
-    { label: 'Calendar',   path: '/calendar',      icon: '◷' },
-    { label: 'Reports',    path: '/reports',       icon: '▤' },
+    { label: 'Dashboard',  path: '/ceo/dashboard', Icon: DashboardIcon },
+    { label: 'Calendar',   path: '/calendar',      Icon: CalendarIcon },
+    { label: 'Reports',    path: '/reports',       Icon: ReportsIcon },
   ],
   staff: [
-    { label: 'Dashboard',  path: '/staff/dashboard', icon: '◆' },
-    { label: 'Calendar',   path: '/calendar',        icon: '◷' },
-    { label: 'Event Day',  path: '/staff/event-day', icon: '✦' },
+    { label: 'Dashboard',  path: '/staff/dashboard', Icon: DashboardIcon },
+    { label: 'Calendar',   path: '/calendar',        Icon: CalendarIcon },
+    { label: 'Event Day',  path: '/staff/event-day', Icon: EventDayIcon },
   ],
 };
 
@@ -59,17 +63,17 @@ export default function Sidebar({ role }) {
       </div>
 
       <nav className="sidebar-nav">
-        {items.map((item) => (
+        {items.map(({ label, path, Icon }) => (
           <NavLink
-            key={item.path}
-            to={item.path}
-            title={item.label}
+            key={path}
+            to={path}
+            title={label}
             className={({ isActive }) =>
               'sidebar-link' + (isActive ? ' active' : '')
             }
           >
-            <span className="sidebar-link-icon">{item.icon}</span>
-            <span className="sidebar-link-label">{item.label}</span>
+            <span className="sidebar-link-icon"><Icon /></span>
+            <span className="sidebar-link-label">{label}</span>
           </NavLink>
         ))}
       </nav>
@@ -89,7 +93,7 @@ export default function Sidebar({ role }) {
           onClick={handleLogout}
           title="Log out"
         >
-          <span className="sidebar-logout-icon">⏻</span>
+          <span className="sidebar-logout-icon"><LogoutIcon width={14} height={14} /></span>
           <span className="sidebar-logout-label">Log out</span>
         </button>
       </div>

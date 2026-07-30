@@ -212,11 +212,11 @@
 }
 
 .notif-row-dot-followup     { background: var(--gold); }
-.notif-row-dot-inquiry      { background: #0369a1; }
+.notif-row-dot-inquiry      { background: var(--navy); }
 .notif-row-dot-upcoming     { background: var(--sage); }
 .notif-row-dot-deadline     { background: var(--terracotta); }
-.notif-row-dot-announcement { background: #7c5cbf; }
-.notif-row-dot-note         { background: #9ca3af; }
+.notif-row-dot-announcement { background: var(--navy); }
+.notif-row-dot-note         { background: var(--color-text-sub); }
 
 .notif-row-dot-urgent {
   background: var(--terracotta);

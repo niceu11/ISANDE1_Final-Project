@@ -121,9 +121,9 @@
 .cal-dot-pencil       { background: var(--gold); }
 .cal-dot-available    { background: #ccc; }
 .cal-dot-overdue      { background: var(--terracotta); }
-.cal-dot-note         { background: #6b7280; }
-.cal-dot-deadline     { background: #b91c1c; }
-.cal-dot-announcement { background: #5b21b6; }
+.cal-dot-note         { background: var(--color-text-sub); }
+.cal-dot-deadline     { background: var(--terracotta); }
+.cal-dot-announcement { background: var(--navy); }
 
 .cal-day-notes {
   display: flex;
@@ -154,9 +154,9 @@
   border-radius: 10px;
 }
 
-.cal-day-note-tag-note         { background: #f3f4f6; color: #4b5563; }
-.cal-day-note-tag-deadline     { background: #fde8e8; color: #b91c1c; }
-.cal-day-note-tag-announcement { background: #ede9fe; color: #5b21b6; }
+.cal-day-note-tag-note         { background: #f1efeb; color: var(--color-text-sub); }
+.cal-day-note-tag-deadline     { background: #e9cfc5; color: #7a3f2a; }
+.cal-day-note-tag-announcement { background: #e6e9ed; color: #3d4d6b; }
 
 .cal-day-note-text { color: var(--color-text); }
 .cal-day-note-author { font-size: 11px; color: var(--color-text-sub); }
