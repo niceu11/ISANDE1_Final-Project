@@ -46,6 +46,7 @@ export default function Login() {
 
   return (
     <div className="login-bg">
+      <ShieldCrest size={640} color="#ffffff" className="login-watermark" />
       <div className="login-card">
         <div className="login-logo">
           <ShieldCrest size={52} color="#dcaf61" />
@@ -78,7 +79,7 @@ export default function Login() {
           </div>
 
           {error && (
-            <p style={{ color: 'var(--terracotta)', fontSize: 13, marginTop: -8 }}>{error}</p>
+            <p style={{ color: 'var(--terracotta-text)', fontSize: 13, marginTop: -8 }}>{error}</p>
           )}
 
           <button className="btn btn-primary login-btn" type="submit" disabled={loading}>

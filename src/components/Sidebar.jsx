@@ -63,12 +63,13 @@ export default function Sidebar({ role }) {
           <NavLink
             key={item.path}
             to={item.path}
+            title={item.label}
             className={({ isActive }) =>
               'sidebar-link' + (isActive ? ' active' : '')
             }
           >
             <span className="sidebar-link-icon">{item.icon}</span>
-            {item.label}
+            <span className="sidebar-link-label">{item.label}</span>
           </NavLink>
         ))}
       </nav>
@@ -86,8 +87,10 @@ export default function Sidebar({ role }) {
         <button
           className="sidebar-logout"
           onClick={handleLogout}
+          title="Log out"
         >
-          Log out
+          <span className="sidebar-logout-icon">⏻</span>
+          <span className="sidebar-logout-label">Log out</span>
         </button>
       </div>
     </aside>

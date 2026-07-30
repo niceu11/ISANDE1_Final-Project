@@ -34,7 +34,7 @@ export default function ClientProfile() {
   return (
     <AppLayout role="ae">
         {loading && <p style={{ color: 'var(--color-text-sub)' }}>Loading…</p>}
-        {error && <p style={{ color: 'var(--terracotta)' }}>{error}</p>}
+        {error && <p style={{ color: 'var(--terracotta-text)' }}>{error}</p>}
 
         {!loading && !error && client && (
           <>

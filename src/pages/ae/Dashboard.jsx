@@ -3,6 +3,7 @@ import AppLayout from '../../components/AppLayout';
 import Card from '../../components/Card';
 import Badge from '../../components/Badge';
 import InquiryModal from './InquiryModal';
+import DashboardSkeleton from '../../components/Skeleton';
 import { api, formatCurrency, formatDate, daysOverdue, buildFollowUpMessage, openSmsComposer } from '../../api/client';
 import { usePolling } from '../../hooks/usePolling';
 import { getCurrentUser } from '../../components/RequireAuth';
@@ -78,8 +79,8 @@ export default function AEDashboard() {
           </button>
         </div>
 
-        {loading && <p style={{ color: 'var(--color-text-sub)' }}>Loading…</p>}
-        {error && <p style={{ color: 'var(--terracotta)' }}>{error}</p>}
+        {loading && <DashboardSkeleton />}
+        {error && <p style={{ color: 'var(--terracotta-text)' }}>{error}</p>}
 
         {!loading && !error && (
           <>
@@ -135,17 +136,22 @@ export default function AEDashboard() {
             </div>
 
             {/* Overdue payments */}
-            <Card title="Overdue Payment Alerts" accent="terracotta">
+            <Card
+              title="Overdue Payment Alerts"
+              accent="terracotta"
+              urgent={overdue.length > 0}
+              badge={overdue.length > 0 ? overdue.length : null}
+            >
               {overdue.length === 0 ? (
-                <p style={{ color: 'var(--color-text-sub)', fontSize: 13 }}>No overdue payments.</p>
+                <p style={{ color: 'var(--color-text-sub)', fontSize: 13 }}>No overdue payments — nothing to chase today.</p>
               ) : (
                 overdue.map((o, i) => (
                   <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: i < overdue.length - 1 ? '1px solid var(--color-border)' : 'none' }}>
                     <div>
                       <div style={{ fontWeight: 500, fontSize: 13 }}>{o.client}</div>
-                      <div style={{ fontSize: 11, color: 'var(--terracotta)' }}>{o.daysOverdue} days overdue</div>
+                      <div style={{ fontSize: 11, color: 'var(--terracotta-text)' }}>{o.daysOverdue} days overdue</div>
                     </div>
-                    <span style={{ fontWeight: 600, color: 'var(--terracotta)' }}>{o.amount}</span>
+                    <span style={{ fontWeight: 600, color: 'var(--terracotta-text)' }}>{o.amount}</span>
                   </div>
                 ))
               )}

@@ -3,6 +3,7 @@ import AppLayout from '../../components/AppLayout';
 import Card from '../../components/Card';
 import Badge from '../../components/Badge';
 import Calendar from '../../components/Calendar';
+import DashboardSkeleton from '../../components/Skeleton';
 import { getCurrentUser } from '../../components/RequireAuth';
 import { api, formatCurrency, formatDate, daysOverdue } from '../../api/client';
 import { usePolling } from '../../hooks/usePolling';
@@ -93,8 +94,8 @@ export default function ManagerDashboard() {
           </div>
         </div>
 
-        {loading && <p style={{ color: 'var(--color-text-sub)' }}>Loading…</p>}
-        {error && <p style={{ color: 'var(--terracotta)' }}>{error}</p>}
+        {loading && <DashboardSkeleton statCount={0} showHero />}
+        {error && <p style={{ color: 'var(--terracotta-text)' }}>{error}</p>}
 
         {!loading && !error && (
           <>
@@ -105,7 +106,13 @@ export default function ManagerDashboard() {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
               {/* Pending verifications */}
-              <Card title="Pending Payment Verification" subtitle={`${pendingVerifications.length} awaiting review`} accent="gold">
+              <Card
+                title="Pending Payment Verification"
+                subtitle={`${pendingVerifications.length} awaiting review`}
+                accent="gold"
+                urgent={pendingVerifications.length > 0}
+                badge={pendingVerifications.length > 0 ? pendingVerifications.length : null}
+              >
                 {pendingVerifications.length === 0 && <p style={{ color: 'var(--color-text-sub)', fontSize: 13 }}>Nothing awaiting review.</p>}
                 {pendingVerifications.map((p, i) => (
                   <div key={`${p.eventId}-${p.field}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: i < pendingVerifications.length - 1 ? '1px solid var(--color-border)' : 'none' }}>
@@ -131,7 +138,7 @@ export default function ManagerDashboard() {
                       <div style={{ fontSize: 11, color: 'var(--color-text-sub)' }}>Event: {o.event}</div>
                       <Badge variant="overdue" label={`${o.daysOverdue} days overdue`} />
                     </div>
-                    <span style={{ fontWeight: 700, color: 'var(--terracotta)', fontSize: 14 }}>{o.amount}</span>
+                    <span style={{ fontWeight: 700, color: 'var(--terracotta-text)', fontSize: 14 }}>{o.amount}</span>
                   </div>
                 ))}
               </Card>

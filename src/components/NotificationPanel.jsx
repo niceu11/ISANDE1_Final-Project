@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api, formatDate } from '../api/client';
 import { computeNotifications } from '../notifications';
 import { usePolling } from '../hooks/usePolling';
+import { getCurrentUser } from './RequireAuth';
 import './NotificationPanel.css';
 
 const SECTIONS = [
@@ -15,9 +17,18 @@ const SECTIONS = [
 
 const MAX_VISIBLE_PER_SECTION = 4;
 
+function destinationFor(item, role) {
+  if (item.type === 'inquiry' || item.type === 'followup') {
+    return role === 'ae' ? `/ae/clients/${item.entityId}` : null;
+  }
+  return '/calendar';
+}
+
 export default function NotificationPanel() {
   const [items, setItems] = useState([]);
   const [pulse, setPulse] = useState(false);
+  const navigate = useNavigate();
+  const role = getCurrentUser()?.role;
 
   const load = () => {
     Promise.all([api.getEvents(), api.getCalendarNotes()])
@@ -36,6 +47,8 @@ export default function NotificationPanel() {
     .map(s => ({ ...s, items: items.filter(i => i.type === s.key) }))
     .filter(s => s.items.length > 0);
 
+  const urgentCount = items.filter(i => i.priority === 'urgent').length;
+
   return (
     <aside className="notif-panel">
       <div className="notif-panel-header">
@@ -48,6 +61,13 @@ export default function NotificationPanel() {
           Live
         </div>
       </div>
+
+      {urgentCount > 0 && (
+        <div className="notif-urgent-banner">
+          <span className="notif-urgent-banner-dot" />
+          {urgentCount} need{urgentCount === 1 ? 's' : ''} your attention first
+        </div>
+      )}
 
       <div className="notif-panel-body">
         {items.length === 0 && (
@@ -67,15 +87,24 @@ export default function NotificationPanel() {
                 <span className="notif-section-count">{section.items.length}</span>
               </div>
               <div className="notif-section-list">
-                {visible.map(item => (
-                  <div key={item.id} className="notif-row">
-                    <span className={`notif-row-dot notif-row-dot-${item.type}`} />
-                    <div className="notif-row-body">
-                      <p className="notif-row-text">{item.text}</p>
-                      <span className="notif-row-date">{formatDate(item.date, { month: 'short', day: 'numeric' })}</span>
-                    </div>
-                  </div>
-                ))}
+                {visible.map(item => {
+                  const dest = destinationFor(item, role);
+                  const Tag = dest ? 'button' : 'div';
+                  return (
+                    <Tag
+                      key={item.id}
+                      type={dest ? 'button' : undefined}
+                      className={`notif-row ${item.priority === 'urgent' ? 'notif-row-urgent' : ''} ${dest ? 'notif-row-clickable' : ''}`}
+                      onClick={dest ? () => navigate(dest) : undefined}
+                    >
+                      <span className={`notif-row-dot notif-row-dot-${item.type} ${item.priority === 'urgent' ? 'notif-row-dot-urgent' : ''}`} />
+                      <div className="notif-row-body">
+                        <p className="notif-row-text">{item.text}</p>
+                        <span className="notif-row-date">{formatDate(item.date, { month: 'short', day: 'numeric' })}</span>
+                      </div>
+                    </Tag>
+                  );
+                })}
                 {hidden > 0 && (
                   <div className="notif-row-more">+{hidden} more</div>
                 )}

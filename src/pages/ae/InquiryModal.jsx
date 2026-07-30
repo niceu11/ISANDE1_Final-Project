@@ -75,7 +75,7 @@ export default function InquiryModal({ onClose, onSaved }) {
           <p style={{ fontSize: 11, color: 'var(--color-text-sub)', marginTop: 4 }}>
             New lead status defaults to <strong>Warm</strong> on save — change it manually from the pipeline view.
           </p>
-          {error && <p style={{ color: 'var(--terracotta)', fontSize: 12 }}>{error}</p>}
+          {error && <p style={{ color: 'var(--terracotta-text)', fontSize: 12 }}>{error}</p>}
           <div className="modal-actions">
             <button type="button" className="btn btn-secondary" onClick={onClose}>Cancel</button>
             <button type="submit" className="btn btn-primary" disabled={saving}>

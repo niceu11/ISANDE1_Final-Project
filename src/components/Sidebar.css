@@ -85,6 +85,11 @@
   opacity: 1;
 }
 
+.sidebar-link:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
 .sidebar-footer {
   padding: 18px 20px 24px;
   border-top: 1px solid rgba(255,255,255,0.08);
@@ -128,6 +133,10 @@
 
 .sidebar-logout {
   width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   padding: 8px;
   background: transparent;
   border: 1px solid rgba(255,255,255,0.15);
@@ -139,8 +148,71 @@
   transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 
+.sidebar-logout-icon {
+  font-size: 13px;
+  line-height: 1;
+}
+
 .sidebar-logout:hover {
   background: rgba(255,255,255,0.08);
   color: var(--white);
   border-color: rgba(255,255,255,0.3);
+}
+
+.sidebar-logout:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+/* Tablet: collapse to icon rail so main content keeps working room. */
+@media (max-width: 1024px) {
+  .sidebar {
+    width: 64px;
+  }
+
+  .sidebar-brand {
+    padding: 20px 0;
+    justify-content: center;
+  }
+
+  .sidebar-brand-text,
+  .sidebar-link-label,
+  .sidebar-user-name,
+  .sidebar-user-title,
+  .sidebar-logout-label {
+    display: none;
+  }
+
+  .sidebar-nav {
+    padding: 16px 8px;
+  }
+
+  .sidebar-link {
+    justify-content: center;
+    padding: 12px 0;
+  }
+
+  .sidebar-link-icon {
+    font-size: 16px;
+  }
+
+  .sidebar-footer {
+    padding: 14px 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .sidebar-user {
+    margin-bottom: 10px;
+  }
+
+  .sidebar-logout {
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 }

@@ -31,6 +31,8 @@ export const api = {
   getPaymentByEvent: (eventId) => request(`/payments/event/${eventId}`),
   verifyPayment: (eventId, field) =>
     request(`/payments/event/${eventId}/verify`, { method: 'PATCH', body: JSON.stringify({ field }) }),
+  uploadProof: (eventId, field, fileName) =>
+    request(`/payments/event/${eventId}/upload-proof`, { method: 'PATCH', body: JSON.stringify({ field, fileName }) }),
 
   getCalendarNotes: () => request('/calendar-notes'),
   createCalendarNote: (payload) =>

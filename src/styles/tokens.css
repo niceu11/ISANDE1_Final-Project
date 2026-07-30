@@ -11,6 +11,12 @@
   --terracotta: #b9694a;
   --white:      #ffffff;
 
+  /* Accessible text variants — same family, darkened to clear 4.5:1 on light backgrounds.
+     Use these (not --gold / --sage) whenever the color carries text, not just a fill/border. */
+  --gold-text: #8a6027;
+  --sage-text: #4a5d44;
+  --terracotta-text: #a25a3e;
+
   /* Semantic */
   --color-bg:        var(--off-white);
   --color-surface:   var(--white);

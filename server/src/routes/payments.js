@@ -25,6 +25,29 @@ router.get('/event/:eventId', asyncHandler(async (req, res) => {
   res.json(payment);
 }));
 
+router.patch('/event/:eventId/upload-proof', asyncHandler(async (req, res) => {
+  const { field, fileName } = req.body; // 'downpayment' | 'balance'
+  if (!['downpayment', 'balance'].includes(field)) {
+    return res.status(400).json({ error: 'field must be "downpayment" or "balance"' });
+  }
+  const payment = await Payment.findOne({ eventId: req.params.eventId });
+  if (!payment) return res.status(404).json({ error: 'Payment not found for this event' });
+
+  payment[field].proofUploaded = true;
+  payment[field].proofFileName = fileName || 'proof-of-payment';
+  payment[field].proofUploadedAt = new Date();
+  if (payment[field].status !== 'verified') payment[field].status = 'pending';
+
+  payment.history.push({
+    label: `${field === 'downpayment' ? 'Downpayment' : 'Balance'} proof submitted — awaiting verification`,
+    date: new Date(),
+    amount: payment[field].amount,
+    status: 'pending',
+  });
+  await payment.save();
+  res.json(payment);
+}));
+
 router.patch('/event/:eventId/verify', asyncHandler(async (req, res) => {
   const { field } = req.body; // 'downpayment' | 'balance'
   if (!['downpayment', 'balance'].includes(field)) {

@@ -132,6 +132,6 @@
   content: '•';
   position: absolute;
   left: 0;
-  color: var(--gold);
+  color: var(--gold-text);
   font-weight: 700;
 }

@@ -75,6 +75,28 @@
   100% { opacity: 0; transform: scale(1.8); }
 }
 
+.notif-urgent-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 14px 26px 0;
+  padding: 9px 12px;
+  background: rgba(185,105,74,0.08);
+  border: 1px solid rgba(185,105,74,0.25);
+  border-radius: var(--radius-md);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--terracotta-text);
+}
+
+.notif-urgent-banner-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--terracotta);
+  flex-shrink: 0;
+}
+
 .notif-panel-body {
   flex: 1;
   overflow-y: auto;
@@ -97,7 +119,7 @@
   height: 36px;
   border-radius: 50%;
   background: rgba(124, 148, 115, 0.14);
-  color: var(--sage);
+  color: var(--sage-text);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -144,14 +166,40 @@
   display: flex;
   align-items: flex-start;
   gap: 10px;
+  width: 100%;
   padding: 8px 8px;
   margin: 0 -8px;
+  border: none;
+  background: none;
   border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  text-align: left;
   transition: background 0.12s ease;
 }
 
 .notif-row:hover {
   background: var(--off-white);
+}
+
+.notif-row-clickable {
+  cursor: pointer;
+}
+
+.notif-row-clickable:hover {
+  background: rgba(220,175,97,0.08);
+}
+
+.notif-row-clickable:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: -1px;
+}
+
+.notif-row-urgent {
+  background: rgba(185,105,74,0.06);
+}
+
+.notif-row-urgent:hover {
+  background: rgba(185,105,74,0.12);
 }
 
 .notif-row-dot {
@@ -160,6 +208,7 @@
   height: 6px;
   border-radius: 50%;
   margin-top: 6px;
+  position: relative;
 }
 
 .notif-row-dot-followup     { background: var(--gold); }
@@ -168,6 +217,19 @@
 .notif-row-dot-deadline     { background: var(--terracotta); }
 .notif-row-dot-announcement { background: #7c5cbf; }
 .notif-row-dot-note         { background: #9ca3af; }
+
+.notif-row-dot-urgent {
+  background: var(--terracotta);
+}
+
+.notif-row-dot-urgent::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 1px solid var(--terracotta);
+  opacity: 0.5;
+}
 
 .notif-row-body {
   flex: 1;
@@ -178,6 +240,10 @@
   font-size: 12.5px;
   line-height: 1.42;
   color: var(--color-text);
+}
+
+.notif-row-urgent .notif-row-text {
+  font-weight: 600;
 }
 
 .notif-row-date {
@@ -192,4 +258,11 @@
   font-size: 11px;
   font-weight: 500;
   color: var(--color-text-sub);
+}
+
+/* Tablet and below: the panel would leave no room for main content, so it's dropped. */
+@media (max-width: 1024px) {
+  .notif-panel {
+    display: none;
+  }
 }

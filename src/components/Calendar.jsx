@@ -105,11 +105,16 @@ export default function Calendar({ events = [], notes = [], onAddNote }) {
           const statuses = day ? (eventMap[day] ?? []) : [];
           const dayNotes = day ? (noteMap[day] ?? []) : [];
           const isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+          const isClickable = Boolean(day && onAddNote);
+          const Tag = isClickable ? 'button' : 'div';
           return (
-            <div
+            <Tag
               key={i}
-              className={`cal-cell ${day ? '' : 'cal-cell-empty'} ${isToday ? 'cal-cell-today' : ''} ${day && onAddNote ? 'cal-cell-clickable' : ''}`}
-              onClick={() => openDay(day)}
+              type={isClickable ? 'button' : undefined}
+              className={`cal-cell ${day ? '' : 'cal-cell-empty'} ${isToday ? 'cal-cell-today' : ''} ${isClickable ? 'cal-cell-clickable' : ''}`}
+              onClick={isClickable ? () => openDay(day) : undefined}
+              aria-label={day ? `${MONTHS[month]} ${day}, ${year}${isClickable ? ' — add a note or deadline' : ''}` : undefined}
+              disabled={!isClickable && !day}
             >
               {day && (
                 <>
@@ -124,7 +129,7 @@ export default function Calendar({ events = [], notes = [], onAddNote }) {
                   </div>
                 </>
               )}
-            </div>
+            </Tag>
           );
         })}
       </div>
