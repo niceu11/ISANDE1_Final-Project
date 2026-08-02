@@ -28,7 +28,7 @@ router.patch('/:id/quick-note', asyncHandler(async (req, res) => {
   res.json(event);
 }));
 
-const FOLLOWUP_LABEL = { sms: 'text message', call: 'phone call', email: 'email' };
+const FOLLOWUP_LABEL = { sms: 'SMS', call: 'phone call', email: 'email' };
 
 router.patch('/:id/follow-up', asyncHandler(async (req, res) => {
   const { method = 'sms', author = '', authorRole = '' } = req.body;

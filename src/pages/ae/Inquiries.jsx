@@ -130,8 +130,8 @@ export default function Inquiries() {
                       </button>
                       <button className="btn btn-secondary" style={{ padding: '5px 12px', fontSize: 12 }}
                         onClick={() => handleTextFollowUp(row)}
-                        title={`Text ${row.clientName} privately (not via Messenger/social)`}>
-                        Text
+                        title={`Send SMS to ${row.clientName} privately (not via Messenger/social)`}>
+                        SMS
                       </button>
                     </div>
                   </td>

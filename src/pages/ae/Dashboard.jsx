@@ -111,9 +111,9 @@ export default function AEDashboard() {
                         className="btn btn-secondary"
                         style={{ padding: '4px 10px', fontSize: 11 }}
                         onClick={() => handleTextFollowUp(f)}
-                        title={`Text ${f.clientName} privately (not via Messenger/social)`}
+                        title={`Send SMS to ${f.clientName} privately (not via Messenger/social)`}
                       >
-                        Text
+                        SMS
                       </button>
                     </div>
                   </div>
