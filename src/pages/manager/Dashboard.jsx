@@ -4,6 +4,8 @@ import Card from '../../components/Card';
 import Badge from '../../components/Badge';
 import Calendar from '../../components/Calendar';
 import DashboardSkeleton from '../../components/Skeleton';
+import ConfirmDialog from '../../components/ConfirmDialog';
+import Toast from '../../components/Toast';
 import { getCurrentUser } from '../../components/RequireAuth';
 import { api, formatCurrency, formatDate, daysOverdue } from '../../api/client';
 import { usePolling } from '../../hooks/usePolling';
@@ -19,6 +21,9 @@ export default function ManagerDashboard() {
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [pendingVerify, setPendingVerify] = useState(null);
+  const [verifying, setVerifying] = useState(false);
+  const [toast, setToast] = useState(null);
 
   const load = (silent = false) => {
     if (!silent) setLoading(true);
@@ -31,12 +36,21 @@ export default function ManagerDashboard() {
   useEffect(load, []);
   usePolling(() => load(true));
 
-  const handleVerify = async (eventId, field) => {
+  const requestVerify = (p) => setPendingVerify(p);
+
+  const confirmVerify = async () => {
+    if (!pendingVerify) return;
+    setVerifying(true);
     try {
-      await api.verifyPayment(eventId, field);
+      await api.verifyPayment(pendingVerify.eventId, pendingVerify.field);
       load();
+      setToast(`Verified: ${pendingVerify.label} for ${pendingVerify.client} (${pendingVerify.amount})`);
+      setTimeout(() => setToast(null), 4000);
     } catch (err) {
       alert(err.message || 'Could not verify payment');
+    } finally {
+      setVerifying(false);
+      setPendingVerify(null);
     }
   };
 
@@ -121,7 +135,7 @@ export default function ManagerDashboard() {
                       <div style={{ fontSize: 11, color: 'var(--color-text-sub)' }}>{p.label} · {p.amount}</div>
                     </div>
                     <button className="btn btn-primary" style={{ fontSize: 12, padding: '6px 14px' }}
-                      onClick={() => handleVerify(p.eventId, p.field)}>
+                      onClick={() => requestVerify(p)}>
                       Verify
                     </button>
                   </div>
@@ -145,6 +159,19 @@ export default function ManagerDashboard() {
             </div>
           </>
         )}
+
+        {pendingVerify && (
+          <ConfirmDialog
+            title="Verify this payment?"
+            message={`Confirm you've checked the bank record for ${pendingVerify.client}'s ${pendingVerify.label.toLowerCase()} of ${pendingVerify.amount}. This marks it as verified and can't be undone from here.`}
+            confirmLabel="Verify Payment"
+            busy={verifying}
+            onConfirm={confirmVerify}
+            onCancel={() => setPendingVerify(null)}
+          />
+        )}
+
+        {toast && <Toast message={toast} />}
     </AppLayout>
   );
 }
