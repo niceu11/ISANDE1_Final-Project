@@ -19,6 +19,8 @@ export const api = {
   getEvents: () => request('/events'),
   getFeaturedEvent: () => request('/events/featured'),
   getEvent: (id) => request(`/events/${id}`),
+  checkAvailability: (date, excludeId) =>
+    request(`/events/availability?date=${encodeURIComponent(date)}${excludeId ? `&excludeId=${excludeId}` : ''}`),
   createEvent: (payload) =>
     request('/events', { method: 'POST', body: JSON.stringify(payload) }),
   updateQuickNote: (id, quickNote) =>

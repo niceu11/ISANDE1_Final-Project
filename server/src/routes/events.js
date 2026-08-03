@@ -15,6 +15,21 @@ router.get('/', asyncHandler(async (req, res) => {
   res.json(events);
 }));
 
+router.get('/availability', asyncHandler(async (req, res) => {
+  const { date, excludeId } = req.query;
+  if (!date) return res.status(400).json({ error: 'date is required (YYYY-MM-DD)' });
+  const dayStart = new Date(`${date}T00:00:00.000Z`);
+  if (Number.isNaN(dayStart.getTime())) return res.status(400).json({ error: 'Invalid date' });
+  const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
+  const query = {
+    eventDate: { $gte: dayStart, $lt: dayEnd },
+    status: { $in: ['confirmed', 'pencil'] },
+  };
+  if (excludeId) query._id = { $ne: excludeId };
+  const conflicts = await Event.find(query).select('clientName venue status eventDate');
+  res.json({ available: conflicts.length === 0, conflicts });
+}));
+
 router.get('/:id', asyncHandler(async (req, res) => {
   const event = await Event.findById(req.params.id);
   if (!event) return res.status(404).json({ error: 'Event not found' });

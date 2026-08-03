@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { api } from '../../api/client';
 
 export default function InquiryModal({ onClose, onSaved }) {
@@ -8,8 +8,25 @@ export default function InquiryModal({ onClose, onSaved }) {
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [availability, setAvailability] = useState(null); // null | { checking } | { conflicts }
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  useEffect(() => {
+    if (!form.eventDate) {
+      setAvailability(null);
+      return;
+    }
+    setAvailability({ checking: true });
+    const timer = setTimeout(() => {
+      api.checkAvailability(form.eventDate)
+        .then(res => setAvailability({ conflicts: res.conflicts }))
+        .catch(() => setAvailability(null));
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [form.eventDate]);
+
+  const hasConflict = availability?.conflicts?.length > 0;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -42,6 +59,26 @@ export default function InquiryModal({ onClose, onSaved }) {
           <div className="form-group">
             <label className="form-label">Event Date</label>
             <input className="form-input" type="date" value={form.eventDate} onChange={e => set('eventDate', e.target.value)} />
+            {availability?.checking && (
+              <p style={{ fontSize: 11.5, color: 'var(--color-text-sub)', marginTop: 4 }}>Checking availability…</p>
+            )}
+            {availability?.conflicts && !availability.checking && (
+              hasConflict ? (
+                <div className="availability-warning">
+                  <strong>⚠ Date already booked</strong>
+                  <ul>
+                    {availability.conflicts.map(c => (
+                      <li key={c._id}>
+                        {c.clientName} — {c.venue || 'venue TBD'} ({c.status === 'confirmed' ? 'Confirmed' : 'Pencil-booked'})
+                      </li>
+                    ))}
+                  </ul>
+                  <span style={{ fontSize: 11.5, opacity: 0.85 }}>You can still log this as a backup lead — just flagging it for you.</span>
+                </div>
+              ) : (
+                <p style={{ fontSize: 11.5, color: '#4a5d44', marginTop: 4 }}>✓ Date is available</p>
+              )
+            )}
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div className="form-group">

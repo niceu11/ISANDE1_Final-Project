@@ -277,6 +277,25 @@
   color: var(--color-text-sub);
 }
 
+.availability-warning {
+  margin-top: 8px;
+  padding: 10px 12px;
+  background: #f1e1db;
+  border: 1px solid #e0c4b8;
+  border-radius: var(--radius-md);
+  color: #7a3f2a;
+  font-size: 12px;
+}
+
+.availability-warning ul {
+  margin: 6px 0 6px 18px;
+  padding: 0;
+}
+
+.availability-warning li {
+  margin-bottom: 2px;
+}
+
 .proof-status {
   display: flex;
   flex-direction: column;

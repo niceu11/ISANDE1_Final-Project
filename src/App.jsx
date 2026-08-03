@@ -6,6 +6,7 @@ import CalendarPage     from './pages/Calendar';
 import Reports          from './pages/Reports';
 import AEDashboard      from './pages/ae/Dashboard';
 import Inquiries        from './pages/ae/Inquiries';
+import ClientsList      from './pages/ae/ClientsList';
 import ClientProfile    from './pages/ae/ClientProfile';
 import PaymentTracker   from './pages/ae/PaymentTracker';
 import ManagerDashboard from './pages/manager/Dashboard';
@@ -27,7 +28,7 @@ export default function App() {
 
         <Route path="/ae/dashboard"    element={<RequireAuth allow={['ae']}><AEDashboard /></RequireAuth>} />
         <Route path="/ae/inquiries"    element={<RequireAuth allow={['ae']}><Inquiries /></RequireAuth>} />
-        <Route path="/ae/clients"      element={<RequireAuth allow={['ae']}><ClientProfile /></RequireAuth>} />
+        <Route path="/ae/clients"      element={<RequireAuth allow={['ae']}><ClientsList /></RequireAuth>} />
         <Route path="/ae/clients/:id"  element={<RequireAuth allow={['ae']}><ClientProfile /></RequireAuth>} />
         <Route path="/ae/payments"     element={<RequireAuth allow={['ae']}><PaymentTracker /></RequireAuth>} />
         <Route path="/ae/payments/:id" element={<RequireAuth allow={['ae']}><PaymentTracker /></RequireAuth>} />
