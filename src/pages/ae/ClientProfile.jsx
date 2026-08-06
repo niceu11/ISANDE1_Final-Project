@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import AppLayout from '../../components/AppLayout';
 import Card from '../../components/Card';
 import Badge from '../../components/Badge';
+import SupplierManager from '../../components/SupplierManager';
 import { api, formatCurrency, formatDate } from '../../api/client';
 
 export default function ClientProfile() {
@@ -95,6 +96,18 @@ export default function ClientProfile() {
                     View Full Payment Tracker
                   </button>
                 )}
+              </Card>
+            </div>
+
+            {/* Suppliers */}
+            <div style={{ marginBottom: 24 }}>
+              <Card
+                title="Suppliers"
+                subtitle="Contact pending suppliers, or swap in a backup if one goes unresponsive"
+                accent="terracotta"
+                badge={client.suppliers.filter(s => s.status !== 'confirmed').length || null}
+              >
+                <SupplierManager event={client} onUpdated={setClient} />
               </Card>
             </div>
 

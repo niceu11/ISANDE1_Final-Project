@@ -39,8 +39,15 @@ const events = [
       { role: 'Catering',      company: 'La Mesa Catering',    contact: '+63 917 111 2222', status: 'confirmed' },
       { role: 'Florals',       company: 'Bloom & Petal Co.',   contact: '+63 920 333 4444', status: 'confirmed' },
       { role: 'Photographer',  company: 'Lens & Light Studio', contact: '+63 915 555 6666', status: 'confirmed' },
-      { role: 'Sounds/AV',     company: 'SoundMax Events',     contact: '+63 918 777 8888', status: 'pending' },
+      {
+        role: 'Sounds/AV', company: 'SoundMax Events', contact: '+63 918 777 8888', status: 'no-response',
+        alternates: [
+          { name: 'Beat & Bass Productions', contact: '+63 919 222 1010' },
+          { name: 'Prime Audio Rentals',      contact: '+63 920 333 2020' },
+        ],
+      },
       { role: 'Hair & Makeup', company: 'Glow Up Artists',     contact: '+63 916 999 0000', status: 'confirmed' },
+      { role: 'Cake & Desserts', company: 'Sweet Layers Bakeshop', contact: '+63 917 444 5050', status: 'pending' },
     ],
     instructions: [
       'Gates open at 3:00 PM for supplier setup. Guest arrival at 4:00 PM.',

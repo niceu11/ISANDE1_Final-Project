@@ -28,6 +28,15 @@ export const api = {
   logFollowUp: (id, method, author, authorRole) =>
     request(`/events/${id}/follow-up`, { method: 'PATCH', body: JSON.stringify({ method, author, authorRole }) }),
 
+  addSupplier: (eventId, payload) =>
+    request(`/events/${eventId}/suppliers`, { method: 'POST', body: JSON.stringify(payload) }),
+  updateSupplier: (eventId, supplierId, payload) =>
+    request(`/events/${eventId}/suppliers/${supplierId}`, { method: 'PATCH', body: JSON.stringify(payload) }),
+  addAlternateSupplier: (eventId, supplierId, payload) =>
+    request(`/events/${eventId}/suppliers/${supplierId}/alternates`, { method: 'POST', body: JSON.stringify(payload) }),
+  promoteAlternate: (eventId, supplierId, altId) =>
+    request(`/events/${eventId}/suppliers/${supplierId}/alternates/${altId}/promote`, { method: 'POST' }),
+
   getPayments: () => request('/payments'),
   getFeaturedPayment: () => request('/payments/featured'),
   getPaymentByEvent: (eventId) => request(`/payments/event/${eventId}`),

@@ -57,12 +57,12 @@ export default function EventDay() {
               </tr>
             </thead>
             <tbody>
-              {event.suppliers.map((s, i) => (
-                <tr key={i}>
+              {event.suppliers.map((s) => (
+                <tr key={s._id}>
                   <td style={{ fontWeight: 500 }}>{s.role}</td>
                   <td>{s.company}</td>
                   <td style={{ color: 'var(--color-text-sub)' }}>{s.contact}</td>
-                  <td><Badge variant={s.status} label={s.status === 'confirmed' ? 'Confirmed' : 'Pending'} /></td>
+                  <td><Badge variant={s.status === 'no-response' ? 'overdue' : s.status} label={s.status === 'no-response' ? 'No Response' : undefined} /></td>
                 </tr>
               ))}
             </tbody>
