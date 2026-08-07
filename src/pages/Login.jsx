@@ -8,8 +8,15 @@ const ROLE_ROUTES = {
   ae: '/ae/dashboard',
   manager: '/manager/dashboard',
   ceo: '/ceo/dashboard',
-  staff: '/staff/event-day',
+  staff: '/staff/dashboard',
 };
+
+const QUICK_LOGINS = [
+  { label: 'AE',      email: 'paula@soireeeventsplace.com' },
+  { label: 'Manager', email: 'christine@soireeeventsplace.com' },
+  { label: 'CEO',     email: 'rowena@soireeeventsplace.com' },
+  { label: 'Staff',   email: 'miguel@soireeeventsplace.com' },
+];
 
 export default function Login() {
   const navigate = useNavigate();
@@ -18,12 +25,11 @@ export default function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
+  const signIn = async (loginEmail, loginPassword) => {
     setError('');
     setLoading(true);
     try {
-      const user = await api.login(email, password);
+      const user = await api.login(loginEmail, loginPassword);
       localStorage.setItem('soiree-user', JSON.stringify(user));
       navigate(ROLE_ROUTES[user.role] ?? '/login');
     } catch (err) {
@@ -33,8 +39,14 @@ export default function Login() {
     }
   };
 
+  const handleLogin = (e) => {
+    e.preventDefault();
+    signIn(email, password);
+  };
+
   return (
     <div className="login-bg">
+      <ShieldCrest size={640} color="#ffffff" className="login-watermark" />
       <div className="login-card">
         <div className="login-logo">
           <ShieldCrest size={52} color="#dcaf61" />
@@ -67,13 +79,30 @@ export default function Login() {
           </div>
 
           {error && (
-            <p style={{ color: 'var(--terracotta)', fontSize: 13, marginTop: -8 }}>{error}</p>
+            <p style={{ color: 'var(--terracotta-text)', fontSize: 13, marginTop: -8 }}>{error}</p>
           )}
 
           <button className="btn btn-primary login-btn" type="submit" disabled={loading}>
             {loading ? 'Signing in…' : 'Sign In'}
           </button>
         </form>
+
+        <div className="login-quick">
+          <span className="login-quick-label">Quick demo access</span>
+          <div className="login-quick-buttons">
+            {QUICK_LOGINS.map(r => (
+              <button
+                key={r.label}
+                type="button"
+                className="login-quick-btn"
+                disabled={loading}
+                onClick={() => signIn(r.email, 'password123')}
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
+        </div>
 
         <p className="login-footer">Soirée Events Place · Internal System</p>
       </div>

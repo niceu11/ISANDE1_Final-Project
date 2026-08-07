@@ -5,6 +5,8 @@ const tranche = {
   dueDate: { type: Date },
   status: { type: String, enum: ['verified', 'pending', 'overdue'], default: 'pending' },
   proofUploaded: { type: Boolean, default: false },
+  proofFileName: { type: String, default: '' },
+  proofUploadedAt: { type: Date },
 };
 
 const historyEntrySchema = new mongoose.Schema({

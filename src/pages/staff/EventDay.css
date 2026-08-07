@@ -30,6 +30,19 @@
   color: var(--color-text-sub);
 }
 
+.event-day-back {
+  background: none;
+  border: none;
+  color: var(--color-text-sub);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.event-day-back:hover {
+  color: var(--navy);
+}
+
 .event-hero-card {
   background: var(--navy);
   border-radius: var(--radius-lg);
@@ -82,6 +95,17 @@
   color: rgba(255,255,255,0.8);
 }
 
+.event-hero-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.event-hero-meta svg {
+  opacity: 0.85;
+  flex-shrink: 0;
+}
+
 .event-section { margin-bottom: 28px; }
 
 .event-section-title {
@@ -119,6 +143,6 @@
   content: '•';
   position: absolute;
   left: 0;
-  color: var(--gold);
+  color: var(--gold-text);
   font-weight: 700;
 }

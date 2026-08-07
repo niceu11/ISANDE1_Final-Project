@@ -1,6 +1,6 @@
-export default function ShieldCrest({ size = 36, color = '#dcaf61' }) {
+export default function ShieldCrest({ size = 36, color = '#dcaf61', className }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 48 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width={size} height={size} viewBox="0 0 48 56" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
       <path
         d="M24 2L4 10V28C4 39.5 13 49.5 24 54C35 49.5 44 39.5 44 28V10L24 2Z"
         fill="none"

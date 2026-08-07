@@ -4,7 +4,7 @@ export const ROLE_HOME = {
   ae: '/ae/dashboard',
   manager: '/manager/dashboard',
   ceo: '/ceo/dashboard',
-  staff: '/staff/event-day',
+  staff: '/staff/dashboard',
 };
 
 export function getCurrentUser() {

@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 import User from '../models/User.js';
 import Event from '../models/Event.js';
 import Payment from '../models/Payment.js';
+import CalendarNote from '../models/CalendarNote.js';
 
 const users = [
   { name: 'Miss Paula', email: 'paula@soireeeventsplace.com', password: 'password123', role: 'ae', title: 'Account Executive' },
@@ -38,8 +39,15 @@ const events = [
       { role: 'Catering',      company: 'La Mesa Catering',    contact: '+63 917 111 2222', status: 'confirmed' },
       { role: 'Florals',       company: 'Bloom & Petal Co.',   contact: '+63 920 333 4444', status: 'confirmed' },
       { role: 'Photographer',  company: 'Lens & Light Studio', contact: '+63 915 555 6666', status: 'confirmed' },
-      { role: 'Sounds/AV',     company: 'SoundMax Events',     contact: '+63 918 777 8888', status: 'pending' },
+      {
+        role: 'Sounds/AV', company: 'SoundMax Events', contact: '+63 918 777 8888', status: 'no-response',
+        alternates: [
+          { name: 'Beat & Bass Productions', contact: '+63 919 222 1010' },
+          { name: 'Prime Audio Rentals',      contact: '+63 920 333 2020' },
+        ],
+      },
       { role: 'Hair & Makeup', company: 'Glow Up Artists',     contact: '+63 916 999 0000', status: 'confirmed' },
+      { role: 'Cake & Desserts', company: 'Sweet Layers Bakeshop', contact: '+63 917 444 5050', status: 'pending' },
     ],
     instructions: [
       'Gates open at 3:00 PM for supplier setup. Guest arrival at 4:00 PM.',
@@ -233,6 +241,7 @@ async function seed() {
     User.deleteMany({}),
     Event.deleteMany({}),
     Payment.deleteMany({}),
+    CalendarNote.deleteMany({}),
   ]);
 
   await User.insertMany(users);
@@ -249,7 +258,14 @@ async function seed() {
 
   await Payment.insertMany(payments);
 
-  console.log(`Seeded ${users.length} users, ${insertedEvents.length} events, ${payments.length} payments.`);
+  const calendarNotes = [
+    { date: new Date('2026-07-28'), text: 'Site visit with Garcia Debut family at Grand Ballroom, 2 PM.', type: 'note', createdBy: 'Miss Paula', createdByRole: 'ae' },
+    { date: new Date('2026-07-31'), text: 'Deadline: submit Q3 supplier contracts to Manager for review.', type: 'deadline', createdBy: 'Christine', createdByRole: 'manager' },
+    { date: new Date('2026-08-01'), text: 'Office closed for team building — no client meetings scheduled.', type: 'announcement', createdBy: 'Rowena', createdByRole: 'ceo' },
+  ];
+  await CalendarNote.insertMany(calendarNotes);
+
+  console.log(`Seeded ${users.length} users, ${insertedEvents.length} events, ${payments.length} payments, ${calendarNotes.length} calendar notes.`);
   await mongoose.disconnect();
 }
 

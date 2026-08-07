@@ -1,29 +1,46 @@
 import { useEffect, useState } from 'react';
-import Sidebar from '../../components/Sidebar';
+import { useNavigate } from 'react-router-dom';
+import AppLayout from '../../components/AppLayout';
 import Card from '../../components/Card';
 import Badge from '../../components/Badge';
 import Calendar from '../../components/Calendar';
+import { getCurrentUser } from '../../components/RequireAuth';
 import { api, formatDate } from '../../api/client';
+import { usePolling } from '../../hooks/usePolling';
 
 function currentUserName() {
-  try {
-    return JSON.parse(localStorage.getItem('soiree-user'))?.name?.split(' ').pop() ?? 'there';
-  } catch {
-    return 'there';
-  }
+  return getCurrentUser()?.name?.split(' ').pop() ?? 'there';
 }
 
 export default function CEODashboard() {
+  const navigate = useNavigate();
+  const user = getCurrentUser();
   const [events, setEvents] = useState([]);
+  const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    api.getEvents()
-      .then(data => { setEvents(data); setError(''); })
+  const load = (silent = false) => {
+    if (!silent) setLoading(true);
+    Promise.all([api.getEvents(), api.getCalendarNotes()])
+      .then(([ev, calendarNotes]) => { setEvents(ev); setNotes(calendarNotes); setError(''); })
       .catch(err => setError(err.message))
       .finally(() => setLoading(false));
-  }, []);
+  };
+
+  useEffect(load, []);
+  usePolling(() => load(true));
+
+  const handleAddNote = async (date, text, type) => {
+    await api.createCalendarNote({
+      date,
+      text,
+      type,
+      createdBy: user?.name ?? '',
+      createdByRole: 'ceo',
+    });
+    load(true);
+  };
 
   const now = new Date();
   const confirmed = events.filter(e => e.status === 'confirmed');
@@ -45,9 +62,7 @@ export default function CEODashboard() {
   ];
 
   return (
-    <div className="app-shell">
-      <Sidebar role="ceo" />
-      <main className="main-content">
+    <AppLayout role="ceo">
         <div className="page-header">
           <div>
             <h1 className="page-title">Good morning, {currentUserName()}.</h1>
@@ -58,7 +73,7 @@ export default function CEODashboard() {
         </div>
 
         {loading && <p style={{ color: 'var(--color-text-sub)' }}>Loading…</p>}
-        {error && <p style={{ color: 'var(--terracotta)' }}>{error}</p>}
+        {error && <p style={{ color: 'var(--terracotta-text)' }}>{error}</p>}
 
         {!loading && !error && (
           <>
@@ -72,10 +87,10 @@ export default function CEODashboard() {
               ))}
             </div>
 
-            {/* Calendar (read-only) */}
+            {/* Calendar */}
             <div style={{ marginBottom: 28 }}>
-              <div style={{ fontSize: 11, color: 'var(--color-text-sub)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10 }}>Booking Calendar — Read Only</div>
-              <Calendar events={calendarEvents} />
+              <div style={{ fontSize: 11, color: 'var(--color-text-sub)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10 }}>Booking Calendar</div>
+              <Calendar events={calendarEvents} notes={notes} onAddNote={handleAddNote} />
             </div>
 
             {/* Confirmed bookings list */}
@@ -97,19 +112,19 @@ export default function CEODashboard() {
               </table>
             </Card>
 
-            {/* Post-MVP placeholders */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
-              {['Total Revenue', 'Conversion Rate'].map(label => (
-                <div key={label} style={{ background: 'var(--white)', border: '1.5px dashed var(--color-border)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-lg)', opacity: 0.5, textAlign: 'center' }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-sub)', marginBottom: 8 }}>{label}</div>
-                  <div style={{ fontSize: 28, fontFamily: 'var(--font-heading)', color: '#ccc' }}>—</div>
-                  <span style={{ display: 'inline-block', marginTop: 10, fontSize: 11, background: '#f0f0f0', color: '#999', padding: '3px 10px', borderRadius: 20 }}>Post-MVP</span>
+            <Card accent="gold">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--navy)' }}>Revenue, conversion rate, and full pipeline breakdown</div>
+                  <div style={{ fontSize: 12, color: 'var(--color-text-sub)', marginTop: 2 }}>Live figures across every tracked inquiry and payment.</div>
                 </div>
-              ))}
-            </div>
+                <button className="btn btn-primary" onClick={() => navigate('/reports')}>
+                  View Reports &amp; Analytics
+                </button>
+              </div>
+            </Card>
           </>
         )}
-      </main>
-    </div>
+    </AppLayout>
   );
 }

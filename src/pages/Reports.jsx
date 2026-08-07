@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
-import Sidebar from '../components/Sidebar';
+import AppLayout from '../components/AppLayout';
 import Card from '../components/Card';
 import Badge from '../components/Badge';
 import { getCurrentUser } from '../components/RequireAuth';
 import { api, formatCurrency } from '../api/client';
+import { usePolling } from '../hooks/usePolling';
+import { generateReportPdf } from '../pdf/generateReportPdf';
 
 const STATUS_ORDER = ['hot', 'warm', 'cold', 'pencil', 'confirmed'];
 const STATUS_LABEL = { hot: 'Hot', warm: 'Warm', cold: 'Cold', pencil: 'Pencil', confirmed: 'Confirmed' };
@@ -16,12 +18,16 @@ export default function Reports() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
+  const load = (silent = false) => {
+    if (!silent) setLoading(true);
     Promise.all([api.getEvents(), api.getPayments()])
       .then(([ev, pay]) => { setEvents(ev); setPayments(pay); setError(''); })
       .catch(err => setError(err.message))
       .finally(() => setLoading(false));
-  }, []);
+  };
+
+  useEffect(load, []);
+  usePolling(() => load(true));
 
   // --- Revenue & outstanding ---
   let totalRevenue = 0;
@@ -63,10 +69,23 @@ export default function Reports() {
   const monthEntries = Object.entries(monthly).sort((a, b) => new Date(a[0]) - new Date(b[0]));
   const maxMonthCount = Math.max(1, ...monthEntries.map(([, c]) => c));
 
+  const handleExportPdf = () => {
+    generateReportPdf({
+      totalRevenue,
+      totalOutstanding,
+      conversionRate,
+      confirmedCount,
+      totalEvents: events.length,
+      avgBookingValue,
+      monthEntries,
+      tranches,
+      statusCounts,
+      generatedBy: getCurrentUser()?.name,
+    });
+  };
+
   return (
-    <div className="app-shell">
-      <Sidebar role={role} />
-      <main className="main-content">
+    <AppLayout role={role}>
         <div className="page-header">
           <div>
             <h1 className="page-title">Reports &amp; Analytics</h1>
@@ -74,10 +93,13 @@ export default function Reports() {
               Live figures across {events.length} tracked inquiries and {payments.length} active payment records.
             </p>
           </div>
+          <button className="btn btn-primary" onClick={handleExportPdf} disabled={loading || !!error}>
+            Download PDF Report
+          </button>
         </div>
 
         {loading && <p style={{ color: 'var(--color-text-sub)' }}>Loading…</p>}
-        {error && <p style={{ color: 'var(--terracotta)' }}>{error}</p>}
+        {error && <p style={{ color: 'var(--terracotta-text)' }}>{error}</p>}
 
         {!loading && !error && (
           <>
@@ -154,7 +176,6 @@ export default function Reports() {
             </Card>
           </>
         )}
-      </main>
-    </div>
+    </AppLayout>
   );
 }

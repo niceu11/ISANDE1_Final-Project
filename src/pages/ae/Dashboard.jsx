@@ -1,16 +1,15 @@
 import { useEffect, useState } from 'react';
-import Sidebar from '../../components/Sidebar';
+import AppLayout from '../../components/AppLayout';
 import Card from '../../components/Card';
 import Badge from '../../components/Badge';
 import InquiryModal from './InquiryModal';
-import { api, formatCurrency, formatDate, daysOverdue } from '../../api/client';
+import DashboardSkeleton from '../../components/Skeleton';
+import { api, formatCurrency, formatDate, daysOverdue, buildFollowUpMessage, openSmsComposer } from '../../api/client';
+import { usePolling } from '../../hooks/usePolling';
+import { getCurrentUser } from '../../components/RequireAuth';
 
 function currentUserName() {
-  try {
-    return JSON.parse(localStorage.getItem('soiree-user'))?.name?.split(' ').pop() ?? 'there';
-  } catch {
-    return 'there';
-  }
+  return getCurrentUser()?.name?.split(' ').pop() ?? 'there';
 }
 
 export default function AEDashboard() {
@@ -20,8 +19,8 @@ export default function AEDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const load = () => {
-    setLoading(true);
+  const load = (silent = false) => {
+    if (!silent) setLoading(true);
     Promise.all([api.getEvents(), api.getPayments()])
       .then(([ev, pay]) => { setEvents(ev); setPayments(pay); setError(''); })
       .catch(err => setError(err.message))
@@ -29,6 +28,7 @@ export default function AEDashboard() {
   };
 
   useEffect(load, []);
+  usePolling(() => load(true));
 
   const leadCounts = { hot: 0, warm: 0, cold: 0 };
   events.forEach(e => { if (leadCounts[e.status] !== undefined) leadCounts[e.status] += 1; });
@@ -50,10 +50,23 @@ export default function AEDashboard() {
     });
   });
 
+  const user = getCurrentUser();
+  const handleTextFollowUp = async (event) => {
+    if (!event.contact) {
+      alert(`No phone number on file for ${event.clientName}.`);
+      return;
+    }
+    openSmsComposer(event.contact, buildFollowUpMessage(event, user?.name));
+    try {
+      await api.logFollowUp(event._id, 'sms', user?.name, user?.role);
+      load(true);
+    } catch {
+      // SMS composer already opened; logging failure isn't worth blocking the user over.
+    }
+  };
+
   return (
-    <div className="app-shell">
-      <Sidebar role="ae" />
-      <main className="main-content">
+    <AppLayout role="ae">
         <div className="page-header">
           <div>
             <h1 className="page-title">Good morning, {currentUserName()}.</h1>
@@ -66,8 +79,8 @@ export default function AEDashboard() {
           </button>
         </div>
 
-        {loading && <p style={{ color: 'var(--color-text-sub)' }}>Loading…</p>}
-        {error && <p style={{ color: 'var(--terracotta)' }}>{error}</p>}
+        {loading && <DashboardSkeleton />}
+        {error && <p style={{ color: 'var(--terracotta-text)' }}>{error}</p>}
 
         {!loading && !error && (
           <>
@@ -92,7 +105,17 @@ export default function AEDashboard() {
                       <div style={{ fontWeight: 500, fontSize: 13 }}>{f.clientName}</div>
                       <div style={{ fontSize: 11, color: 'var(--color-text-sub)' }}>{f.eventType} · {formatDate(f.eventDate)}</div>
                     </div>
-                    <Badge variant={f.status} />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <Badge variant={f.status} />
+                      <button
+                        className="btn btn-secondary"
+                        style={{ padding: '4px 10px', fontSize: 11 }}
+                        onClick={() => handleTextFollowUp(f)}
+                        title={`Send SMS to ${f.clientName} privately (not via Messenger/social)`}
+                      >
+                        SMS
+                      </button>
+                    </div>
                   </div>
                 ))}
               </Card>
@@ -113,17 +136,22 @@ export default function AEDashboard() {
             </div>
 
             {/* Overdue payments */}
-            <Card title="Overdue Payment Alerts" accent="terracotta">
+            <Card
+              title="Overdue Payment Alerts"
+              accent="terracotta"
+              urgent={overdue.length > 0}
+              badge={overdue.length > 0 ? overdue.length : null}
+            >
               {overdue.length === 0 ? (
-                <p style={{ color: 'var(--color-text-sub)', fontSize: 13 }}>No overdue payments.</p>
+                <p style={{ color: 'var(--color-text-sub)', fontSize: 13 }}>No overdue payments — nothing to chase today.</p>
               ) : (
                 overdue.map((o, i) => (
                   <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: i < overdue.length - 1 ? '1px solid var(--color-border)' : 'none' }}>
                     <div>
                       <div style={{ fontWeight: 500, fontSize: 13 }}>{o.client}</div>
-                      <div style={{ fontSize: 11, color: 'var(--terracotta)' }}>{o.daysOverdue} days overdue</div>
+                      <div style={{ fontSize: 11, color: 'var(--terracotta-text)' }}>{o.daysOverdue} days overdue</div>
                     </div>
-                    <span style={{ fontWeight: 600, color: 'var(--terracotta)' }}>{o.amount}</span>
+                    <span style={{ fontWeight: 600, color: 'var(--terracotta-text)' }}>{o.amount}</span>
                   </div>
                 ))
               )}
@@ -132,7 +160,6 @@ export default function AEDashboard() {
         )}
 
         {showModal && <InquiryModal onClose={() => setShowModal(false)} onSaved={load} />}
-      </main>
-    </div>
+    </AppLayout>
   );
 }

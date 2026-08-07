@@ -1,28 +1,43 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Sidebar from '../../components/Sidebar';
+import AppLayout from '../../components/AppLayout';
 import Badge from '../../components/Badge';
 import InquiryModal from './InquiryModal';
-import { api, formatDate } from '../../api/client';
+import { api, formatDate, buildFollowUpMessage, openSmsComposer } from '../../api/client';
+import { usePolling } from '../../hooks/usePolling';
+import { getCurrentUser } from '../../components/RequireAuth';
 
 export default function Inquiries() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [dateFilter, setDateFilter]     = useState('all');
   const [showModal, setShowModal]       = useState(false);
   const [events, setEvents] = useState([]);
+  const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const load = () => {
-    setLoading(true);
+  const load = (silent = false) => {
+    if (!silent) setLoading(true);
     api.getEvents()
-      .then(data => { setEvents(data); setError(''); })
+      .then(data => {
+        setEvents(prev => {
+          if (!silent || !editingId) return data;
+          // Don't clobber a quick-note the user is actively typing during a background poll.
+          return data.map(e => {
+            if (e._id !== editingId) return e;
+            const existing = prev.find(p => p._id === editingId);
+            return existing ? { ...e, quickNote: existing.quickNote } : e;
+          });
+        });
+        setError('');
+      })
       .catch(err => setError(err.message))
       .finally(() => setLoading(false));
   };
 
   useEffect(load, []);
+  usePolling(() => load(true));
 
   const setNote = (id, value) =>
     setEvents(rows => rows.map(r => (r._id === id ? { ...r, quickNote: value } : r)));
@@ -31,12 +46,25 @@ export default function Inquiries() {
     api.updateQuickNote(id, value).catch(err => setError(err.message));
   };
 
+  const user = getCurrentUser();
+  const handleTextFollowUp = async (row) => {
+    if (!row.contact) {
+      alert(`No phone number on file for ${row.clientName}.`);
+      return;
+    }
+    openSmsComposer(row.contact, buildFollowUpMessage(row, user?.name));
+    try {
+      await api.logFollowUp(row._id, 'sms', user?.name, user?.role);
+      load(true);
+    } catch {
+      // SMS composer already opened; logging failure isn't worth blocking the user over.
+    }
+  };
+
   const filtered = events.filter(i => statusFilter === 'all' || i.status === statusFilter);
 
   return (
-    <div className="app-shell">
-      <Sidebar role="ae" />
-      <main className="main-content">
+    <AppLayout role="ae">
         <div className="page-header">
           <h1 className="page-title">Inquiry Management</h1>
           <button className="btn btn-primary" onClick={() => setShowModal(true)}>
@@ -60,7 +88,7 @@ export default function Inquiries() {
         </div>
 
         {loading && <p style={{ color: 'var(--color-text-sub)' }}>Loading…</p>}
-        {error && <p style={{ color: 'var(--terracotta)' }}>{error}</p>}
+        {error && <p style={{ color: 'var(--terracotta-text)' }}>{error}</p>}
 
         {!loading && !error && (
           <table className="data-table">
@@ -89,15 +117,23 @@ export default function Inquiries() {
                       style={{ padding: '5px 8px', fontSize: 12, minWidth: 140 }}
                       placeholder="Add note..."
                       value={row.quickNote ?? ''}
+                      onFocus={() => setEditingId(row._id)}
                       onChange={e => setNote(row._id, e.target.value)}
-                      onBlur={e => saveNote(row._id, e.target.value)}
+                      onBlur={e => { saveNote(row._id, e.target.value); setEditingId(null); }}
                     />
                   </td>
                   <td>
-                    <button className="btn btn-secondary" style={{ padding: '5px 12px', fontSize: 12 }}
-                      onClick={() => navigate(`/ae/clients/${row._id}`)}>
-                      View
-                    </button>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button className="btn btn-secondary" style={{ padding: '5px 12px', fontSize: 12 }}
+                        onClick={() => navigate(`/ae/clients/${row._id}`)}>
+                        View
+                      </button>
+                      <button className="btn btn-secondary" style={{ padding: '5px 12px', fontSize: 12 }}
+                        onClick={() => handleTextFollowUp(row)}
+                        title={`Send SMS to ${row.clientName} privately (not via Messenger/social)`}>
+                        SMS
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -115,7 +151,6 @@ export default function Inquiries() {
         </div>
 
         {showModal && <InquiryModal onClose={() => setShowModal(false)} onSaved={load} />}
-      </main>
-    </div>
+    </AppLayout>
   );
 }

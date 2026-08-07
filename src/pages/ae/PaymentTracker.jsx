@@ -1,9 +1,58 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Sidebar from '../../components/Sidebar';
+import AppLayout from '../../components/AppLayout';
 import Card from '../../components/Card';
 import Badge from '../../components/Badge';
 import { api, formatCurrency, formatDate } from '../../api/client';
+
+function TrancheProof({ tranche, field, uploading, onUpload }) {
+  const inputRef = useRef(null);
+
+  if (tranche.status === 'verified') {
+    return (
+      <div className="proof-status proof-status-verified">
+        ✓ Proof of payment uploaded{tranche.proofFileName ? ` — ${tranche.proofFileName}` : ''}
+      </div>
+    );
+  }
+
+  if (tranche.proofUploaded) {
+    return (
+      <div className="proof-status proof-status-pending">
+        <span>📎 {tranche.proofFileName || 'proof-of-payment'} — awaiting verification</span>
+        {tranche.proofUploadedAt && (
+          <span className="proof-status-meta">Submitted {formatDate(tranche.proofUploadedAt, { month: 'short', day: 'numeric' })}</span>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*,.pdf"
+        style={{ display: 'none' }}
+        onChange={e => {
+          const file = e.target.files?.[0];
+          if (file) onUpload(field, file.name);
+          e.target.value = '';
+        }}
+      />
+      <button
+        type="button"
+        className="upload-dropzone"
+        onClick={() => inputRef.current?.click()}
+        disabled={uploading === field}
+      >
+        <span className="upload-dropzone-icon">⬆</span>
+        <span>{uploading === field ? 'Uploading…' : 'Upload Proof of Payment'}</span>
+        <span className="upload-dropzone-hint">Click to choose an image or PDF</span>
+      </button>
+    </>
+  );
+}
 
 export default function PaymentTracker() {
   const { id } = useParams();
@@ -11,22 +60,35 @@ export default function PaymentTracker() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [uploading, setUploading] = useState(null);
 
-  useEffect(() => {
+  const load = () => {
     setLoading(true);
     const promise = id ? api.getPaymentByEvent(id) : api.getFeaturedPayment();
     promise
       .then(pay => { setData(pay); setError(''); })
       .catch(err => setError(err.message))
       .finally(() => setLoading(false));
-  }, [id]);
+  };
+
+  useEffect(load, [id]);
+
+  const handleUpload = async (field, fileName) => {
+    setUploading(field);
+    try {
+      const updated = await api.uploadProof(data.eventId, field, fileName);
+      setData(updated);
+    } catch (err) {
+      alert(err.message || 'Could not upload proof of payment');
+    } finally {
+      setUploading(null);
+    }
+  };
 
   return (
-    <div className="app-shell">
-      <Sidebar role="ae" />
-      <main className="main-content">
+    <AppLayout role="ae">
         {loading && <p style={{ color: 'var(--color-text-sub)' }}>Loading…</p>}
-        {error && <p style={{ color: 'var(--terracotta)' }}>{error}</p>}
+        {error && <p style={{ color: 'var(--terracotta-text)' }}>{error}</p>}
 
         {!loading && !error && data && (
           <>
@@ -42,7 +104,7 @@ export default function PaymentTracker() {
                 </p>
               </div>
               <div style={{ fontSize: 12, color: 'var(--color-text-sub)', background: 'var(--champagne)', padding: '6px 14px', borderRadius: 20 }}>
-                AE Read-Only View
+                AE — Verification requires a Manager
               </div>
             </div>
 
@@ -55,8 +117,8 @@ export default function PaymentTracker() {
                   <Badge variant={data.downpayment.status} />
                   <span style={{ fontSize: 12, color: 'var(--color-text-sub)' }}>Due {formatDate(data.downpayment.dueDate)}</span>
                 </div>
-                <div style={{ marginTop: 14, fontSize: 12, color: data.downpayment.proofUploaded ? 'var(--sage)' : 'var(--terracotta)' }}>
-                  {data.downpayment.proofUploaded ? '✓ Proof of payment uploaded' : '⚠ No proof uploaded yet'}
+                <div style={{ marginTop: 14 }}>
+                  <TrancheProof tranche={data.downpayment} field="downpayment" uploading={uploading} onUpload={handleUpload} />
                 </div>
               </Card>
 
@@ -68,12 +130,9 @@ export default function PaymentTracker() {
                   <Badge variant={data.balance.status} />
                   <span style={{ fontSize: 12, color: 'var(--color-text-sub)' }}>Due {formatDate(data.balance.dueDate)}</span>
                 </div>
-                <div style={{ marginTop: 14, fontSize: 12, color: data.balance.proofUploaded ? 'var(--sage)' : 'var(--color-text-sub)' }}>
-                  {data.balance.proofUploaded ? '✓ Proof of payment uploaded' : 'Awaiting payment'}
+                <div style={{ marginTop: 14 }}>
+                  <TrancheProof tranche={data.balance} field="balance" uploading={uploading} onUpload={handleUpload} />
                 </div>
-                <button className="btn btn-secondary" style={{ marginTop: 14, fontSize: 12, width: '100%', justifyContent: 'center' }}>
-                  Upload Proof of Payment
-                </button>
               </Card>
             </div>
 
@@ -101,7 +160,6 @@ export default function PaymentTracker() {
             </Card>
           </>
         )}
-      </main>
-    </div>
+    </AppLayout>
   );
 }

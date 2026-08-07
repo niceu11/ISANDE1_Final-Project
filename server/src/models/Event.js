@@ -6,12 +6,18 @@ const noteSchema = new mongoose.Schema({
   text: { type: String, required: true },
 }, { _id: false });
 
+const alternateSupplierSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  contact: { type: String, required: true },
+});
+
 const supplierSchema = new mongoose.Schema({
   role: { type: String, required: true },
   company: { type: String, required: true },
   contact: { type: String, required: true },
-  status: { type: String, enum: ['confirmed', 'pending'], default: 'pending' },
-}, { _id: false });
+  status: { type: String, enum: ['confirmed', 'pending', 'no-response'], default: 'pending' },
+  alternates: [alternateSupplierSchema],
+});
 
 const eventSchema = new mongoose.Schema({
   clientName: { type: String, required: true },

@@ -1,21 +1,41 @@
 import { useEffect, useState } from 'react';
-import Sidebar from '../../components/Sidebar';
-import Calendar from '../../components/Calendar';
-import Card from '../../components/Card';
-import Badge from '../../components/Badge';
-import { api, formatDate } from '../../api/client';
+import AppLayout from '../components/AppLayout';
+import Calendar from '../components/Calendar';
+import Card from '../components/Card';
+import Badge from '../components/Badge';
+import { getCurrentUser } from '../components/RequireAuth';
+import { api, formatDate } from '../api/client';
+import { usePolling } from '../hooks/usePolling';
 
 export default function CalendarPage() {
+  const user = getCurrentUser();
+  const role = user?.role ?? 'ae';
   const [events, setEvents] = useState([]);
+  const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    api.getEvents()
-      .then(data => { setEvents(data); setError(''); })
+  const load = (silent = false) => {
+    if (!silent) setLoading(true);
+    Promise.all([api.getEvents(), api.getCalendarNotes()])
+      .then(([ev, calendarNotes]) => { setEvents(ev); setNotes(calendarNotes); setError(''); })
       .catch(err => setError(err.message))
       .finally(() => setLoading(false));
-  }, []);
+  };
+
+  useEffect(load, []);
+  usePolling(() => load(true));
+
+  const handleAddNote = async (date, text, type) => {
+    await api.createCalendarNote({
+      date,
+      text,
+      type,
+      createdBy: user?.name ?? '',
+      createdByRole: role,
+    });
+    load(true);
+  };
 
   const calendarEvents = events
     .filter(e => ['confirmed', 'pencil'].includes(e.status) && e.eventDate)
@@ -26,19 +46,22 @@ export default function CalendarPage() {
     .slice(0, 6);
 
   return (
-    <div className="app-shell">
-      <Sidebar role="ae" />
-      <main className="main-content">
+    <AppLayout role={role}>
         <div className="page-header">
-          <h1 className="page-title">Booking Calendar</h1>
+          <div>
+            <h1 className="page-title">Booking Calendar</h1>
+            <p style={{ color: 'var(--color-text-sub)', fontSize: 13, marginTop: 4 }}>
+              Click any date to add a note or deadline — visible to everyone on the team.
+            </p>
+          </div>
         </div>
 
         {loading && <p style={{ color: 'var(--color-text-sub)' }}>Loading…</p>}
-        {error && <p style={{ color: 'var(--terracotta)' }}>{error}</p>}
+        {error && <p style={{ color: 'var(--terracotta-text)' }}>{error}</p>}
 
         {!loading && !error && (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 24, alignItems: 'start' }}>
-            <Calendar events={calendarEvents} />
+            <Calendar events={calendarEvents} notes={notes} onAddNote={handleAddNote} />
 
             <Card title="Upcoming Events" accent="sage">
               {upcomingList.length === 0 && <p style={{ color: 'var(--color-text-sub)', fontSize: 13 }}>No upcoming events.</p>}
@@ -54,7 +77,6 @@ export default function CalendarPage() {
             </Card>
           </div>
         )}
-      </main>
-    </div>
+    </AppLayout>
   );
 }

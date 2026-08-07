@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Sidebar from '../../components/Sidebar';
+import AppLayout from '../../components/AppLayout';
 import Card from '../../components/Card';
 import Badge from '../../components/Badge';
+import SupplierManager from '../../components/SupplierManager';
 import { api, formatCurrency, formatDate } from '../../api/client';
 
 export default function ClientProfile() {
@@ -32,11 +33,9 @@ export default function ClientProfile() {
   }, [id]);
 
   return (
-    <div className="app-shell">
-      <Sidebar role="ae" />
-      <main className="main-content">
+    <AppLayout role="ae">
         {loading && <p style={{ color: 'var(--color-text-sub)' }}>Loading…</p>}
-        {error && <p style={{ color: 'var(--terracotta)' }}>{error}</p>}
+        {error && <p style={{ color: 'var(--terracotta-text)' }}>{error}</p>}
 
         {!loading && !error && client && (
           <>
@@ -100,6 +99,18 @@ export default function ClientProfile() {
               </Card>
             </div>
 
+            {/* Suppliers */}
+            <div style={{ marginBottom: 24 }}>
+              <Card
+                title="Suppliers"
+                subtitle="Contact pending suppliers, or swap in a backup if one goes unresponsive"
+                accent="terracotta"
+                badge={client.suppliers.filter(s => s.status !== 'confirmed').length || null}
+              >
+                <SupplierManager event={client} onUpdated={setClient} />
+              </Card>
+            </div>
+
             {/* Notes log */}
             <Card title="Notes Log" accent="sage">
               {client.notes.length === 0 && <p style={{ color: 'var(--color-text-sub)', fontSize: 13 }}>No notes yet.</p>}
@@ -117,7 +128,6 @@ export default function ClientProfile() {
             </Card>
           </>
         )}
-      </main>
-    </div>
+    </AppLayout>
   );
 }

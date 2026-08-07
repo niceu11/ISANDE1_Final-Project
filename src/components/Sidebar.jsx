@@ -1,23 +1,34 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import ShieldCrest from './ShieldCrest';
 import { getCurrentUser } from './RequireAuth';
+import {
+  DashboardIcon, InquiriesIcon, CalendarIcon, ClientsIcon,
+  PaymentsIcon, ReportsIcon, EventDayIcon, LogoutIcon,
+} from './icons/NavIcons';
 import './Sidebar.css';
 
 const NAV_ITEMS = {
   ae: [
-    { label: 'Dashboard',  path: '/ae/dashboard' },
-    { label: 'Inquiries',  path: '/ae/inquiries' },
-    { label: 'Calendar',   path: '/ae/calendar' },
-    { label: 'Clients',    path: '/ae/clients' },
-    { label: 'Payments',   path: '/ae/payments' },
+    { label: 'Dashboard',  path: '/ae/dashboard', Icon: DashboardIcon },
+    { label: 'Inquiries',  path: '/ae/inquiries', Icon: InquiriesIcon },
+    { label: 'Calendar',   path: '/calendar',     Icon: CalendarIcon },
+    { label: 'Clients',    path: '/ae/clients',   Icon: ClientsIcon },
+    { label: 'Payments',   path: '/ae/payments',  Icon: PaymentsIcon },
   ],
   manager: [
-    { label: 'Dashboard',  path: '/manager/dashboard' },
-    { label: 'Reports',    path: '/reports' },
+    { label: 'Dashboard',  path: '/manager/dashboard', Icon: DashboardIcon },
+    { label: 'Calendar',   path: '/calendar',          Icon: CalendarIcon },
+    { label: 'Reports',    path: '/reports',           Icon: ReportsIcon },
   ],
   ceo: [
-    { label: 'Dashboard',  path: '/ceo/dashboard' },
-    { label: 'Reports',    path: '/reports' },
+    { label: 'Dashboard',  path: '/ceo/dashboard', Icon: DashboardIcon },
+    { label: 'Calendar',   path: '/calendar',      Icon: CalendarIcon },
+    { label: 'Reports',    path: '/reports',       Icon: ReportsIcon },
+  ],
+  staff: [
+    { label: 'Dashboard',  path: '/staff/dashboard', Icon: DashboardIcon },
+    { label: 'Calendar',   path: '/calendar',        Icon: CalendarIcon },
+    { label: 'Event Day',  path: '/staff/event-day', Icon: EventDayIcon },
   ],
 };
 
@@ -25,6 +36,7 @@ const ROLE_LABELS = {
   ae:      { name: 'Miss Paula', title: 'Account Executive' },
   manager: { name: 'Christine',  title: 'Events Manager' },
   ceo:     { name: 'Rowena',     title: 'CEO' },
+  staff:   { name: 'Miguel',     title: 'On-site Staff' },
 };
 
 export default function Sidebar({ role }) {
@@ -51,15 +63,17 @@ export default function Sidebar({ role }) {
       </div>
 
       <nav className="sidebar-nav">
-        {items.map((item) => (
+        {items.map(({ label, path, Icon }) => (
           <NavLink
-            key={item.path}
-            to={item.path}
+            key={path}
+            to={path}
+            title={label}
             className={({ isActive }) =>
               'sidebar-link' + (isActive ? ' active' : '')
             }
           >
-            {item.label}
+            <span className="sidebar-link-icon"><Icon /></span>
+            <span className="sidebar-link-label">{label}</span>
           </NavLink>
         ))}
       </nav>
@@ -77,8 +91,10 @@ export default function Sidebar({ role }) {
         <button
           className="sidebar-logout"
           onClick={handleLogout}
+          title="Log out"
         >
-          Log out
+          <span className="sidebar-logout-icon"><LogoutIcon width={14} height={14} /></span>
+          <span className="sidebar-logout-label">Log out</span>
         </button>
       </div>
     </aside>

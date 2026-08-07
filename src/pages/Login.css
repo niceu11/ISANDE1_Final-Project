@@ -5,6 +5,17 @@
   align-items: center;
   justify-content: center;
   padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.05;
+  pointer-events: none;
 }
 
 .login-card {
@@ -14,6 +25,7 @@
   width: 100%;
   max-width: 400px;
   box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+  position: relative;
 }
 
 .login-logo {
@@ -48,6 +60,54 @@
   padding: 12px;
   font-size: 14px;
   margin-top: 8px;
+}
+
+.login-quick {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--color-border);
+  text-align: center;
+}
+
+.login-quick-label {
+  display: block;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--color-text-sub);
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.login-quick-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.login-quick-btn {
+  padding: 6px 14px;
+  border-radius: 16px;
+  border: 1px solid var(--color-border);
+  background: var(--off-white);
+  color: var(--navy);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.login-quick-btn:hover:not(:disabled) {
+  background: var(--gold);
+  color: var(--navy);
+  border-color: var(--gold);
+}
+
+.login-quick-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
 
 .login-footer {

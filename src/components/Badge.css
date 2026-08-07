@@ -10,11 +10,16 @@
   white-space: nowrap;
 }
 
-.badge-hot      { background: #fde8e8; color: #b91c1c; }
-.badge-warm     { background: #fef3c7; color: #92400e; }
-.badge-cold     { background: #e0f2fe; color: #0369a1; }
-.badge-confirmed { background: #d1fae5; color: #065f46; }
-.badge-pencil   { background: #fef9c3; color: #854d0e; }
-.badge-overdue  { background: var(--terracotta); color: var(--white); }
-.badge-verified { background: var(--sage); color: var(--white); }
-.badge-pending  { background: #f3f4f6; color: #4b5563; border: 1px solid #d1d5db; }
+/* Lead pipeline: warm family carries urgency (terracotta = act now, gold = warm, muted navy = cooling off) */
+.badge-hot      { background: #f1e1db; color: #a25a3e; }
+.badge-warm     { background: #f7eedc; color: #8a6027; }
+.badge-cold     { background: #e6e9ed; color: #3d4d6b; }
+
+/* Booking lifecycle: sage = settled/confirmed, champagne = provisional */
+.badge-confirmed { background: #e5eae3; color: #4a5d44; }
+.badge-pencil    { background: #f2e8d6; color: #00204a; }
+
+/* Payments: overdue reads louder than a routine hot lead - same family, more saturated */
+.badge-overdue  { background: #e9cfc5; color: #7a3f2a; font-weight: 700; }
+.badge-verified { background: #e5eae3; color: #4a5d44; }
+.badge-pending  { background: #f1efeb; color: #6b6560; border: 1px solid #ddd8d0; }

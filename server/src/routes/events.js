@@ -15,6 +15,21 @@ router.get('/', asyncHandler(async (req, res) => {
   res.json(events);
 }));
 
+router.get('/availability', asyncHandler(async (req, res) => {
+  const { date, excludeId } = req.query;
+  if (!date) return res.status(400).json({ error: 'date is required (YYYY-MM-DD)' });
+  const dayStart = new Date(`${date}T00:00:00.000Z`);
+  if (Number.isNaN(dayStart.getTime())) return res.status(400).json({ error: 'Invalid date' });
+  const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
+  const query = {
+    eventDate: { $gte: dayStart, $lt: dayEnd },
+    status: { $in: ['confirmed', 'pencil'] },
+  };
+  if (excludeId) query._id = { $ne: excludeId };
+  const conflicts = await Event.find(query).select('clientName venue status eventDate');
+  res.json({ available: conflicts.length === 0, conflicts });
+}));
+
 router.get('/:id', asyncHandler(async (req, res) => {
   const event = await Event.findById(req.params.id);
   if (!event) return res.status(404).json({ error: 'Event not found' });
@@ -25,6 +40,76 @@ router.patch('/:id/quick-note', asyncHandler(async (req, res) => {
   const { quickNote } = req.body;
   const event = await Event.findByIdAndUpdate(req.params.id, { quickNote }, { new: true });
   if (!event) return res.status(404).json({ error: 'Event not found' });
+  res.json(event);
+}));
+
+const FOLLOWUP_LABEL = { sms: 'SMS', call: 'phone call', email: 'email' };
+
+router.patch('/:id/follow-up', asyncHandler(async (req, res) => {
+  const { method = 'sms', author = '', authorRole = '' } = req.body;
+  const event = await Event.findById(req.params.id);
+  if (!event) return res.status(404).json({ error: 'Event not found' });
+
+  const label = FOLLOWUP_LABEL[method] ?? method;
+  event.notes.unshift({
+    date: new Date(),
+    author: author || authorRole || 'System',
+    text: `Follow-up sent via ${label}.`,
+  });
+  event.followupsCompleted = Math.min(event.followupsCompleted + 1, event.followupsTotal);
+  event.lastActivityAt = new Date();
+  await event.save();
+  res.json(event);
+}));
+
+router.post('/:id/suppliers', asyncHandler(async (req, res) => {
+  const { role, company, contact } = req.body;
+  const event = await Event.findById(req.params.id);
+  if (!event) return res.status(404).json({ error: 'Event not found' });
+  event.suppliers.push({ role, company, contact, status: 'pending' });
+  await event.save();
+  res.status(201).json(event);
+}));
+
+router.patch('/:id/suppliers/:supplierId', asyncHandler(async (req, res) => {
+  const { status, contact, company } = req.body;
+  const event = await Event.findById(req.params.id);
+  if (!event) return res.status(404).json({ error: 'Event not found' });
+  const supplier = event.suppliers.id(req.params.supplierId);
+  if (!supplier) return res.status(404).json({ error: 'Supplier not found' });
+  if (status) supplier.status = status;
+  if (contact) supplier.contact = contact;
+  if (company) supplier.company = company;
+  await event.save();
+  res.json(event);
+}));
+
+router.post('/:id/suppliers/:supplierId/alternates', asyncHandler(async (req, res) => {
+  const { name, contact } = req.body;
+  const event = await Event.findById(req.params.id);
+  if (!event) return res.status(404).json({ error: 'Event not found' });
+  const supplier = event.suppliers.id(req.params.supplierId);
+  if (!supplier) return res.status(404).json({ error: 'Supplier not found' });
+  supplier.alternates.push({ name, contact });
+  await event.save();
+  res.status(201).json(event);
+}));
+
+router.post('/:id/suppliers/:supplierId/alternates/:altId/promote', asyncHandler(async (req, res) => {
+  const event = await Event.findById(req.params.id);
+  if (!event) return res.status(404).json({ error: 'Event not found' });
+  const supplier = event.suppliers.id(req.params.supplierId);
+  if (!supplier) return res.status(404).json({ error: 'Supplier not found' });
+  const alt = supplier.alternates.id(req.params.altId);
+  if (!alt) return res.status(404).json({ error: 'Alternate not found' });
+
+  const previousPrimary = { name: supplier.company, contact: supplier.contact };
+  supplier.company = alt.name;
+  supplier.contact = alt.contact;
+  supplier.status = 'pending';
+  supplier.alternates.pull(alt._id);
+  supplier.alternates.push(previousPrimary);
+  await event.save();
   res.json(event);
 }));
 
