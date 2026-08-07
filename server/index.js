@@ -9,6 +9,6 @@ connectDB()
     app.listen(PORT, () => console.log(`Soiree Hub API listening on http://localhost:${PORT}`));
   })
   .catch((err) => {
-    console.error('Failed to connect to MongoDB:', err.message);
+    console.error('Failed to connect to MongoDB!:', err.message);
     process.exit(1);
   });
