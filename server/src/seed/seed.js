@@ -6,6 +6,17 @@ import Event from '../models/Event.js';
 import Payment from '../models/Payment.js';
 import CalendarNote from '../models/CalendarNote.js';
 
+// All event/payment/activity dates below are anchored to whenever this script
+// actually runs, not hardcoded calendar dates - so "5 days overdue" or "followed
+// up 2 days ago" stays true no matter how much later the seed is re-run before
+// a demo. Re-run `npm run seed` right before presenting to refresh everything.
+const NOW = new Date();
+function daysFromNow(n) {
+  const d = new Date(NOW);
+  d.setDate(d.getDate() + n);
+  return d;
+}
+
 const users = [
   { name: 'Miss Paula', email: 'paula@soireeeventsplace.com', password: 'password123', role: 'ae', title: 'Account Executive' },
   { name: 'Christine',  email: 'christine@soireeeventsplace.com', password: 'password123', role: 'manager', title: 'Events Manager' },
@@ -20,7 +31,7 @@ const events = [
     email: 'santos.family@email.com',
     eventType: 'Wedding Reception',
     venue: 'Garden Pavilion',
-    eventDate: new Date('2026-08-12'),
+    eventDate: daysFromNow(4),
     time: '4:00 PM – 10:00 PM',
     guestCount: 180,
     coordinator: 'Miss Paula',
@@ -28,12 +39,12 @@ const events = [
     contractStatus: 'signed',
     followupsCompleted: 3,
     followupsTotal: 3,
-    lastActivityAt: new Date('2026-07-10'),
+    lastActivityAt: daysFromNow(-2),
     featured: true,
     notes: [
-      { date: new Date('2026-07-10'), author: 'Paula', text: 'Client confirmed venue and finalized guest count at 180 pax.' },
-      { date: new Date('2026-07-05'), author: 'Paula', text: 'Follow-up call completed. Bride prefers peach and gold color motif.' },
-      { date: new Date('2026-06-28'), author: 'Paula', text: 'Initial inquiry received via referral from Garcia family.' },
+      { date: daysFromNow(-2),  author: 'Paula', text: 'Client confirmed venue and finalized guest count at 180 pax.' },
+      { date: daysFromNow(-7),  author: 'Paula', text: 'Follow-up call completed. Bride prefers peach and gold color motif.' },
+      { date: daysFromNow(-14), author: 'Paula', text: 'Initial inquiry received via referral from Garcia family.' },
     ],
     suppliers: [
       { role: 'Catering',      company: 'La Mesa Catering',    contact: '+63 917 111 2222', status: 'confirmed' },
@@ -63,14 +74,14 @@ const events = [
     email: 'reyes.wedding@email.com',
     eventType: 'Wedding Ceremony',
     venue: 'Garden Pavilion',
-    eventDate: new Date('2026-07-26'),
+    eventDate: daysFromNow(18),
     guestCount: 150,
     coordinator: 'Miss Paula',
     status: 'confirmed',
     contractStatus: 'signed',
     followupsCompleted: 3,
     followupsTotal: 3,
-    lastActivityAt: new Date('2026-07-20'),
+    lastActivityAt: daysFromNow(-4),
   },
   {
     clientName: 'Garcia Debut',
@@ -78,13 +89,13 @@ const events = [
     email: 'garcia.debut@email.com',
     eventType: 'Debut – 18th Birthday',
     venue: 'Grand Ballroom',
-    eventDate: new Date('2026-07-28'),
+    eventDate: daysFromNow(20),
     guestCount: 120,
     status: 'pencil',
     contractStatus: 'pending',
     followupsCompleted: 2,
     followupsTotal: 3,
-    lastActivityAt: new Date('2026-07-22'),
+    lastActivityAt: daysFromNow(-3),
   },
   {
     clientName: 'Cruz Anniversary',
@@ -92,13 +103,13 @@ const events = [
     email: 'cruz.anniversary@email.com',
     eventType: 'Anniversary Celebration',
     venue: 'Terrace Hall',
-    eventDate: new Date('2026-07-30'),
+    eventDate: daysFromNow(22),
     guestCount: 80,
     status: 'confirmed',
     contractStatus: 'signed',
     followupsCompleted: 3,
     followupsTotal: 3,
-    lastActivityAt: new Date('2026-07-15'),
+    lastActivityAt: daysFromNow(-6),
   },
   {
     clientName: 'Rivera Debut',
@@ -106,13 +117,13 @@ const events = [
     email: 'rivera.debut@email.com',
     eventType: 'Debut – 18th Birthday',
     venue: 'Grand Ballroom',
-    eventDate: new Date('2026-09-03'),
+    eventDate: daysFromNow(26),
     guestCount: 100,
     status: 'confirmed',
     contractStatus: 'signed',
     followupsCompleted: 3,
     followupsTotal: 3,
-    lastActivityAt: new Date('2026-07-12'),
+    lastActivityAt: daysFromNow(-5),
   },
   {
     clientName: 'Lim & Co.',
@@ -120,12 +131,12 @@ const events = [
     email: 'lim.co@email.com',
     eventType: 'Corporate Dinner',
     venue: '',
-    eventDate: new Date('2026-10-15'),
+    eventDate: daysFromNow(68),
     status: 'cold',
     contractStatus: 'pending',
     followupsCompleted: 3,
     followupsTotal: 3,
-    lastActivityAt: new Date('2026-07-18'),
+    lastActivityAt: daysFromNow(-20),
   },
   {
     clientName: 'Cruz, Maria',
@@ -133,12 +144,12 @@ const events = [
     email: 'maria.cruz@email.com',
     eventType: 'Debut',
     venue: '',
-    eventDate: new Date('2026-11-20'),
+    eventDate: daysFromNow(104),
     status: 'warm',
     contractStatus: 'pending',
     followupsCompleted: 0,
     followupsTotal: 3,
-    lastActivityAt: new Date('2026-07-26'),
+    lastActivityAt: daysFromNow(-6),
   },
   {
     clientName: 'Tan Wedding',
@@ -146,12 +157,12 @@ const events = [
     email: 'tan.wedding@email.com',
     eventType: 'Wedding Reception',
     venue: '',
-    eventDate: new Date('2026-12-05'),
+    eventDate: daysFromNow(119),
     status: 'hot',
     contractStatus: 'pending',
     followupsCompleted: 1,
     followupsTotal: 3,
-    lastActivityAt: new Date('2026-07-27'),
+    lastActivityAt: daysFromNow(-1),
   },
   {
     clientName: 'Alvarez, Andrea',
@@ -159,12 +170,12 @@ const events = [
     email: 'andrea.alvarez@email.com',
     eventType: 'Wedding Reception',
     venue: '',
-    eventDate: new Date('2027-01-10'),
+    eventDate: daysFromNow(155),
     status: 'warm',
     contractStatus: 'pending',
     followupsCompleted: 2,
     followupsTotal: 3,
-    lastActivityAt: new Date('2026-07-24'),
+    lastActivityAt: daysFromNow(-8),
   },
   {
     clientName: 'Reyes, Carla',
@@ -177,7 +188,7 @@ const events = [
     contractStatus: 'pending',
     followupsCompleted: 3,
     followupsTotal: 3,
-    lastActivityAt: new Date('2026-07-13'),
+    lastActivityAt: daysFromNow(-25),
   },
 ];
 
@@ -185,51 +196,51 @@ const events = [
 const paymentsByClient = {
   'Santos Family': {
     totalAmount: 200000,
-    downpayment: { amount: 50000, dueDate: new Date('2026-06-30'), status: 'verified', proofUploaded: true },
-    balance:     { amount: 150000, dueDate: new Date('2026-07-15'), status: 'overdue', proofUploaded: false },
+    downpayment: { amount: 50000, dueDate: daysFromNow(-30), status: 'verified', proofUploaded: true },
+    balance:     { amount: 150000, dueDate: daysFromNow(-5), status: 'overdue', proofUploaded: false },
     history: [
-      { label: 'Downpayment received',   date: new Date('2026-06-30'), amount: 50000, status: 'verified' },
-      { label: 'Second payment overdue', date: new Date('2026-07-15'), amount: 25000, status: 'overdue' },
+      { label: 'Downpayment received',   date: daysFromNow(-30), amount: 50000, status: 'verified' },
+      { label: 'Second payment overdue', date: daysFromNow(-5),  amount: 25000, status: 'overdue' },
     ],
   },
   'Reyes Wedding': {
     totalAmount: 180000,
-    downpayment: { amount: 45000, dueDate: new Date('2026-07-01'), status: 'verified', proofUploaded: true },
-    balance:     { amount: 135000, dueDate: new Date('2026-08-20'), status: 'pending', proofUploaded: false },
+    downpayment: { amount: 45000, dueDate: daysFromNow(-25), status: 'verified', proofUploaded: true },
+    balance:     { amount: 135000, dueDate: daysFromNow(12), status: 'pending', proofUploaded: false },
     history: [
-      { label: 'Downpayment received', date: new Date('2026-07-01'), amount: 45000, status: 'verified' },
+      { label: 'Downpayment received', date: daysFromNow(-25), amount: 45000, status: 'verified' },
     ],
   },
   'Cruz Anniversary': {
     totalAmount: 90000,
-    downpayment: { amount: 90000, dueDate: new Date('2026-06-15'), status: 'verified', proofUploaded: true },
-    balance:     { amount: 0, dueDate: new Date('2026-06-15'), status: 'verified', proofUploaded: true },
+    downpayment: { amount: 90000, dueDate: daysFromNow(-14), status: 'verified', proofUploaded: true },
+    balance:     { amount: 0, dueDate: daysFromNow(-14), status: 'verified', proofUploaded: true },
     history: [
-      { label: 'Full payment received', date: new Date('2026-06-15'), amount: 90000, status: 'verified' },
+      { label: 'Full payment received', date: daysFromNow(-14), amount: 90000, status: 'verified' },
     ],
   },
   'Tan Wedding': {
     totalAmount: 120000,
-    downpayment: { amount: 40000, dueDate: new Date('2026-07-10'), status: 'overdue', proofUploaded: false },
-    balance:     { amount: 80000, dueDate: new Date('2026-12-01'), status: 'pending', proofUploaded: false },
+    downpayment: { amount: 40000, dueDate: daysFromNow(-2), status: 'overdue', proofUploaded: false },
+    balance:     { amount: 80000, dueDate: daysFromNow(110), status: 'pending', proofUploaded: false },
     history: [
-      { label: 'Downpayment overdue', date: new Date('2026-07-10'), amount: 40000, status: 'overdue' },
+      { label: 'Downpayment overdue', date: daysFromNow(-2), amount: 40000, status: 'overdue' },
     ],
   },
   'Lim & Co.': {
     totalAmount: 150000,
-    downpayment: { amount: 40000, dueDate: new Date('2026-07-18'), status: 'pending', proofUploaded: true },
-    balance:     { amount: 110000, dueDate: new Date('2026-10-01'), status: 'pending', proofUploaded: false },
+    downpayment: { amount: 40000, dueDate: daysFromNow(-10), status: 'pending', proofUploaded: true },
+    balance:     { amount: 110000, dueDate: daysFromNow(55), status: 'pending', proofUploaded: false },
     history: [
-      { label: 'Downpayment submitted, awaiting verification', date: new Date('2026-07-18'), amount: 40000, status: 'pending' },
+      { label: 'Downpayment submitted, awaiting verification', date: daysFromNow(-10), amount: 40000, status: 'pending' },
     ],
   },
   'Garcia Debut': {
     totalAmount: 60000,
-    downpayment: { amount: 20000, dueDate: new Date('2026-07-20'), status: 'pending', proofUploaded: true },
-    balance:     { amount: 40000, dueDate: new Date('2026-07-25'), status: 'pending', proofUploaded: false },
+    downpayment: { amount: 20000, dueDate: daysFromNow(-3), status: 'pending', proofUploaded: true },
+    balance:     { amount: 40000, dueDate: daysFromNow(5), status: 'pending', proofUploaded: false },
     history: [
-      { label: 'Downpayment submitted, awaiting verification', date: new Date('2026-07-20'), amount: 20000, status: 'pending' },
+      { label: 'Downpayment submitted, awaiting verification', date: daysFromNow(-3), amount: 20000, status: 'pending' },
     ],
   },
 };
@@ -259,9 +270,9 @@ async function seed() {
   await Payment.insertMany(payments);
 
   const calendarNotes = [
-    { date: new Date('2026-07-28'), text: 'Site visit with Garcia Debut family at Grand Ballroom, 2 PM.', type: 'note', createdBy: 'Miss Paula', createdByRole: 'ae' },
-    { date: new Date('2026-07-31'), text: 'Deadline: submit Q3 supplier contracts to Manager for review.', type: 'deadline', createdBy: 'Christine', createdByRole: 'manager' },
-    { date: new Date('2026-08-01'), text: 'Office closed for team building — no client meetings scheduled.', type: 'announcement', createdBy: 'Rowena', createdByRole: 'ceo' },
+    { date: daysFromNow(16), text: 'Site visit with Garcia Debut family at Grand Ballroom, 2 PM.', type: 'note', createdBy: 'Miss Paula', createdByRole: 'ae' },
+    { date: daysFromNow(3),  text: 'Deadline: submit Q3 supplier contracts to Manager for review.', type: 'deadline', createdBy: 'Christine', createdByRole: 'manager' },
+    { date: daysFromNow(10), text: 'Office closed for team building — no client meetings scheduled.', type: 'announcement', createdBy: 'Rowena', createdByRole: 'ceo' },
   ];
   await CalendarNote.insertMany(calendarNotes);
 
