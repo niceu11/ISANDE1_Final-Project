@@ -190,6 +190,38 @@ const events = [
     followupsTotal: 3,
     lastActivityAt: daysFromNow(-25),
   },
+  // Already-completed past bookings, so Reports/History have a real prior month
+  // and prior period to compare against (not just upcoming events).
+  {
+    clientName: 'Ramos Baptism',
+    contact: '+63 926 222 3344',
+    email: 'ramos.baptism@email.com',
+    eventType: 'Baptism Reception',
+    venue: 'Terrace Hall',
+    eventDate: daysFromNow(-25),
+    guestCount: 70,
+    coordinator: 'Miss Paula',
+    status: 'confirmed',
+    contractStatus: 'signed',
+    followupsCompleted: 3,
+    followupsTotal: 3,
+    lastActivityAt: daysFromNow(-25),
+  },
+  {
+    clientName: 'Dela Torre Wedding',
+    contact: '+63 927 444 5566',
+    email: 'delatorre.wedding@email.com',
+    eventType: 'Wedding Reception',
+    venue: 'Grand Ballroom',
+    eventDate: daysFromNow(-95),
+    guestCount: 160,
+    coordinator: 'Miss Paula',
+    status: 'confirmed',
+    contractStatus: 'signed',
+    followupsCompleted: 3,
+    followupsTotal: 3,
+    lastActivityAt: daysFromNow(-95),
+  },
 ];
 
 // Keyed by clientName so payments can be linked to the right event after insert.
@@ -241,6 +273,23 @@ const paymentsByClient = {
     balance:     { amount: 40000, dueDate: daysFromNow(5), status: 'pending', proofUploaded: false },
     history: [
       { label: 'Downpayment submitted, awaiting verification', date: daysFromNow(-3), amount: 20000, status: 'pending' },
+    ],
+  },
+  'Ramos Baptism': {
+    totalAmount: 70000,
+    downpayment: { amount: 70000, dueDate: daysFromNow(-30), status: 'verified', proofUploaded: true },
+    balance:     { amount: 0, dueDate: daysFromNow(-30), status: 'verified', proofUploaded: true },
+    history: [
+      { label: 'Full payment received', date: daysFromNow(-30), amount: 70000, status: 'verified' },
+    ],
+  },
+  'Dela Torre Wedding': {
+    totalAmount: 210000,
+    downpayment: { amount: 60000, dueDate: daysFromNow(-100), status: 'verified', proofUploaded: true },
+    balance:     { amount: 150000, dueDate: daysFromNow(-96), status: 'verified', proofUploaded: true },
+    history: [
+      { label: 'Downpayment received', date: daysFromNow(-100), amount: 60000, status: 'verified' },
+      { label: 'Balance received',     date: daysFromNow(-96),  amount: 150000, status: 'verified' },
     ],
   },
 };

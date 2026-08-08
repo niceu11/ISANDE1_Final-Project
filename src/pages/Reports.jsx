@@ -13,21 +13,38 @@ const TRANCHE_LABEL = { verified: 'Verified', pending: 'Pending', overdue: 'Over
 
 export default function Reports() {
   const role = getCurrentUser()?.role ?? 'manager';
-  const [events, setEvents] = useState([]);
-  const [payments, setPayments] = useState([]);
+  const [allEvents, setAllEvents] = useState([]);
+  const [allPayments, setAllPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [periodMonth, setPeriodMonth] = useState(''); // '' = all time, else 'YYYY-MM'
 
   const load = (silent = false) => {
     if (!silent) setLoading(true);
     Promise.all([api.getEvents(), api.getPayments()])
-      .then(([ev, pay]) => { setEvents(ev); setPayments(pay); setError(''); })
+      .then(([ev, pay]) => { setAllEvents(ev); setAllPayments(pay); setError(''); })
       .catch(err => setError(err.message))
       .finally(() => setLoading(false));
   };
 
   useEffect(load, []);
   usePolling(() => load(true));
+
+  const inPeriod = (dateStr) => {
+    if (!periodMonth) return true;
+    if (!dateStr) return false;
+    return new Date(dateStr).toISOString().slice(0, 7) === periodMonth;
+  };
+
+  const events = allEvents.filter(e => inPeriod(e.eventDate));
+  const payments = allPayments.filter(p => inPeriod(p.eventDate));
+
+  const monthOptions = [...new Set(
+    [...allEvents, ...allPayments]
+      .map(x => x.eventDate)
+      .filter(Boolean)
+      .map(d => new Date(d).toISOString().slice(0, 7)),
+  )].sort();
 
   // --- Revenue & outstanding ---
   let totalRevenue = 0;
@@ -90,12 +107,22 @@ export default function Reports() {
           <div>
             <h1 className="page-title">Reports &amp; Analytics</h1>
             <p style={{ color: 'var(--color-text-sub)', fontSize: 13, marginTop: 4 }}>
-              Live figures across {events.length} tracked inquiries and {payments.length} active payment records.
+              {periodMonth
+                ? `Figures for ${new Date(`${periodMonth}-01`).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })} — ${events.length} tracked inquiries, ${payments.length} payment records.`
+                : `Live figures across ${events.length} tracked inquiries and ${payments.length} active payment records.`}
             </p>
           </div>
-          <button className="btn btn-primary" onClick={handleExportPdf} disabled={loading || !!error}>
-            Download PDF Report
-          </button>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <select className="filter-select" style={{ minWidth: 180 }} value={periodMonth} onChange={e => setPeriodMonth(e.target.value)}>
+              <option value="">All Time</option>
+              {monthOptions.map(m => (
+                <option key={m} value={m}>{new Date(`${m}-01`).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</option>
+              ))}
+            </select>
+            <button className="btn btn-primary" onClick={handleExportPdf} disabled={loading || !!error}>
+              Download PDF Report
+            </button>
+          </div>
         </div>
 
         {loading && <p style={{ color: 'var(--color-text-sub)' }}>Loading…</p>}

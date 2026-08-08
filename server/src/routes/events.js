@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import Event from '../models/Event.js';
 import { asyncHandler } from '../asyncHandler.js';
+import { logAudit } from '../audit.js';
 
 const router = Router();
 
@@ -79,6 +80,86 @@ router.patch('/:id/quick-note', asyncHandler(async (req, res) => {
   res.json(event);
 }));
 
+router.patch('/:id/status', asyncHandler(async (req, res) => {
+  const { status, author = '', authorRole = '' } = req.body;
+  if (!STATUS_VALUES.includes(status)) {
+    return res.status(400).json({ error: `status must be one of: ${STATUS_VALUES.join(', ')}` });
+  }
+  const event = await Event.findById(req.params.id);
+  if (!event) return res.status(404).json({ error: 'Event not found' });
+
+  if (status === 'confirmed' && !event.eventDate) {
+    return res.status(400).json({ error: 'Set an event date before confirming this booking' });
+  }
+
+  const previousStatus = event.status;
+  event.status = status;
+  event.lastActivityAt = new Date();
+  await event.save();
+
+  if (previousStatus !== status) {
+    await logAudit({
+      action: 'event.status_changed',
+      entityType: 'event',
+      entityId: event._id,
+      entityLabel: event.clientName,
+      actorName: author,
+      actorRole: authorRole,
+      detail: `Changed status from ${previousStatus} to ${status}`,
+    });
+  }
+  res.json(event);
+}));
+
+router.patch('/:id/date', asyncHandler(async (req, res) => {
+  const { eventDate, author = '', authorRole = '' } = req.body;
+  const event = await Event.findById(req.params.id);
+  if (!event) return res.status(404).json({ error: 'Event not found' });
+
+  if (event.status === 'confirmed') {
+    return res.status(400).json({ error: 'This event is confirmed — the date is locked and can no longer be edited' });
+  }
+
+  const parsed = eventDate ? new Date(eventDate) : undefined;
+  if (eventDate && Number.isNaN(parsed?.getTime())) {
+    return res.status(400).json({ error: 'Invalid date' });
+  }
+  event.eventDate = parsed;
+  event.lastActivityAt = new Date();
+  await event.save();
+
+  await logAudit({
+    action: 'event.date_set',
+    entityType: 'event',
+    entityId: event._id,
+    entityLabel: event.clientName,
+    actorName: author,
+    actorRole: authorRole,
+    detail: `Set event date to ${parsed ? parsed.toDateString() : '(cleared)'}`,
+  });
+  res.json(event);
+}));
+
+router.patch('/:id/package-sent', asyncHandler(async (req, res) => {
+  const { packageSent, author = '', authorRole = '' } = req.body;
+  const event = await Event.findById(req.params.id);
+  if (!event) return res.status(404).json({ error: 'Event not found' });
+
+  event.packageSent = Boolean(packageSent);
+  await event.save();
+
+  await logAudit({
+    action: 'event.package_sent',
+    entityType: 'event',
+    entityId: event._id,
+    entityLabel: event.clientName,
+    actorName: author,
+    actorRole: authorRole,
+    detail: event.packageSent ? 'Marked package as sent to client' : 'Unmarked package-sent status',
+  });
+  res.json(event);
+}));
+
 const FOLLOWUP_LABEL = { sms: 'SMS', call: 'phone call', email: 'email' };
 
 router.patch('/:id/follow-up', asyncHandler(async (req, res) => {
@@ -95,28 +176,61 @@ router.patch('/:id/follow-up', asyncHandler(async (req, res) => {
   event.followupsCompleted = Math.min(event.followupsCompleted + 1, event.followupsTotal);
   event.lastActivityAt = new Date();
   await event.save();
+
+  await logAudit({
+    action: 'followup.sent',
+    entityType: 'event',
+    entityId: event._id,
+    entityLabel: event.clientName,
+    actorName: author,
+    actorRole: authorRole,
+    detail: `Sent follow-up via ${label}`,
+  });
   res.json(event);
 }));
 
 router.post('/:id/suppliers', asyncHandler(async (req, res) => {
-  const { role, company, contact } = req.body;
+  const { role, company, contact, author = '', authorRole = '' } = req.body;
   const event = await Event.findById(req.params.id);
   if (!event) return res.status(404).json({ error: 'Event not found' });
   event.suppliers.push({ role, company, contact, status: 'pending' });
   await event.save();
+
+  await logAudit({
+    action: 'supplier.added',
+    entityType: 'event',
+    entityId: event._id,
+    entityLabel: event.clientName,
+    actorName: author,
+    actorRole: authorRole,
+    detail: `Added supplier ${company} (${role})`,
+  });
   res.status(201).json(event);
 }));
 
 router.patch('/:id/suppliers/:supplierId', asyncHandler(async (req, res) => {
-  const { status, contact, company } = req.body;
+  const { status, contact, company, author = '', authorRole = '' } = req.body;
   const event = await Event.findById(req.params.id);
   if (!event) return res.status(404).json({ error: 'Event not found' });
   const supplier = event.suppliers.id(req.params.supplierId);
   if (!supplier) return res.status(404).json({ error: 'Supplier not found' });
+  const previousStatus = supplier.status;
   if (status) supplier.status = status;
   if (contact) supplier.contact = contact;
   if (company) supplier.company = company;
   await event.save();
+
+  if (status && status !== previousStatus) {
+    await logAudit({
+      action: 'supplier.status_changed',
+      entityType: 'event',
+      entityId: event._id,
+      entityLabel: event.clientName,
+      actorName: author,
+      actorRole: authorRole,
+      detail: `${supplier.company} (${supplier.role}) status changed from ${previousStatus} to ${status}`,
+    });
+  }
   res.json(event);
 }));
 
@@ -132,6 +246,7 @@ router.post('/:id/suppliers/:supplierId/alternates', asyncHandler(async (req, re
 }));
 
 router.post('/:id/suppliers/:supplierId/alternates/:altId/promote', asyncHandler(async (req, res) => {
+  const { author = '', authorRole = '' } = req.body;
   const event = await Event.findById(req.params.id);
   if (!event) return res.status(404).json({ error: 'Event not found' });
   const supplier = event.suppliers.id(req.params.supplierId);
@@ -146,11 +261,21 @@ router.post('/:id/suppliers/:supplierId/alternates/:altId/promote', asyncHandler
   supplier.alternates.pull(alt._id);
   supplier.alternates.push(previousPrimary);
   await event.save();
+
+  await logAudit({
+    action: 'supplier.alternate_promoted',
+    entityType: 'event',
+    entityId: event._id,
+    entityLabel: event.clientName,
+    actorName: author,
+    actorRole: authorRole,
+    detail: `Promoted alternate ${alt.name} to replace ${previousPrimary.name} for ${supplier.role}`,
+  });
   res.json(event);
 }));
 
 router.post('/', asyncHandler(async (req, res) => {
-  const { clientName, contact, eventDate, eventType, venue, ceremony, notes } = req.body;
+  const { clientName, contact, eventDate, eventType, venue, ceremony, notes, author = '', authorRole = '' } = req.body;
   const event = await Event.create({
     clientName,
     contact,
@@ -161,6 +286,16 @@ router.post('/', asyncHandler(async (req, res) => {
     contractStatus: 'pending',
     lastActivityAt: new Date(),
     notes: notes ? [{ date: new Date(), author: 'You', text: 'Initial inquiry logged.' }] : [],
+  });
+
+  await logAudit({
+    action: 'event.created',
+    entityType: 'event',
+    entityId: event._id,
+    entityLabel: event.clientName,
+    actorName: author,
+    actorRole: authorRole,
+    detail: `Logged new inquiry${eventDate ? ` for ${new Date(eventDate).toDateString()}` : ''}`,
   });
   res.status(201).json(event);
 }));

@@ -4,6 +4,7 @@ import RequireAuth from './components/RequireAuth';
 import Login            from './pages/Login';
 import CalendarPage     from './pages/Calendar';
 import Reports          from './pages/Reports';
+import History          from './pages/History';
 import AEDashboard      from './pages/ae/Dashboard';
 import Inquiries        from './pages/ae/Inquiries';
 import ClientsList      from './pages/ae/ClientsList';
@@ -25,6 +26,7 @@ export default function App() {
 
         <Route path="/calendar"        element={<RequireAuth allow={ALL_ROLES}><CalendarPage /></RequireAuth>} />
         <Route path="/reports"         element={<RequireAuth allow={['manager', 'ceo']}><Reports /></RequireAuth>} />
+        <Route path="/history"         element={<RequireAuth allow={['manager', 'ceo']}><History /></RequireAuth>} />
 
         <Route path="/ae/dashboard"    element={<RequireAuth allow={['ae']}><AEDashboard /></RequireAuth>} />
         <Route path="/ae/inquiries"    element={<RequireAuth allow={['ae']}><Inquiries /></RequireAuth>} />

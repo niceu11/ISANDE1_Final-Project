@@ -4,6 +4,7 @@ import authRoutes from './routes/auth.js';
 import eventRoutes from './routes/events.js';
 import paymentRoutes from './routes/payments.js';
 import calendarNoteRoutes from './routes/calendarNotes.js';
+import auditLogRoutes from './routes/auditLogs.js';
 
 const app = express();
 
@@ -15,6 +16,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/calendar-notes', calendarNoteRoutes);
+app.use('/api/audit-logs', auditLogRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err);

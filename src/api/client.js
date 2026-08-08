@@ -29,6 +29,12 @@ export const api = {
     request(`/events/${id}/quick-note`, { method: 'PATCH', body: JSON.stringify({ quickNote }) }),
   logFollowUp: (id, method, author, authorRole) =>
     request(`/events/${id}/follow-up`, { method: 'PATCH', body: JSON.stringify({ method, author, authorRole }) }),
+  updateEventStatus: (id, status, author, authorRole) =>
+    request(`/events/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status, author, authorRole }) }),
+  updateEventDate: (id, eventDate, author, authorRole) =>
+    request(`/events/${id}/date`, { method: 'PATCH', body: JSON.stringify({ eventDate, author, authorRole }) }),
+  updateEventPackageSent: (id, packageSent, author, authorRole) =>
+    request(`/events/${id}/package-sent`, { method: 'PATCH', body: JSON.stringify({ packageSent, author, authorRole }) }),
 
   addSupplier: (eventId, payload) =>
     request(`/events/${eventId}/suppliers`, { method: 'POST', body: JSON.stringify(payload) }),
@@ -42,16 +48,18 @@ export const api = {
   getPayments: () => request('/payments'),
   getFeaturedPayment: () => request('/payments/featured'),
   getPaymentByEvent: (eventId) => request(`/payments/event/${eventId}`),
-  verifyPayment: (eventId, field) =>
-    request(`/payments/event/${eventId}/verify`, { method: 'PATCH', body: JSON.stringify({ field }) }),
-  uploadProof: (eventId, field, fileName) =>
-    request(`/payments/event/${eventId}/upload-proof`, { method: 'PATCH', body: JSON.stringify({ field, fileName }) }),
+  verifyPayment: (eventId, field, author, authorRole) =>
+    request(`/payments/event/${eventId}/verify`, { method: 'PATCH', body: JSON.stringify({ field, author, authorRole }) }),
+  uploadProof: (eventId, field, fileName, author, authorRole) =>
+    request(`/payments/event/${eventId}/upload-proof`, { method: 'PATCH', body: JSON.stringify({ field, fileName, author, authorRole }) }),
 
   getCalendarNotes: () => request('/calendar-notes'),
   createCalendarNote: (payload) =>
     request('/calendar-notes', { method: 'POST', body: JSON.stringify(payload) }),
   deleteCalendarNote: (id) =>
     request(`/calendar-notes/${id}`, { method: 'DELETE' }),
+
+  getAuditLogs: () => request('/audit-logs'),
 };
 
 export function formatCurrency(amount) {
@@ -74,6 +82,33 @@ export function buildFollowUpMessage(event, aeName) {
   const firstName = event.clientName?.split(/[ ,]/)[0] || event.clientName;
   const when = event.eventDate ? ` for ${formatDate(event.eventDate)}` : '';
   return `Hi ${firstName}, this is ${aeName || 'your Soirée Hub coordinator'} from Soirée Events Place following up on your ${event.eventType || 'event'} inquiry${when}. Let us know if you have any questions!`;
+}
+
+export function buildPaymentFollowUpMessage(tranche, tranchLabel) {
+  const label = tranchLabel === 'balance' ? 'remaining balance' : 'down payment';
+  return `Good day! We would like to follow up on your pending ${label} amounting to ${formatCurrency(tranche.amount)}. Kindly let us know if you have already scheduled the payment. You may settle it as early as today to avoid any penalties and to keep your reservation on track. Thank you!`;
+}
+
+export function buildPencilFollowUpMessage(event) {
+  const firstName = event.clientName?.split(/[ ,]/)[0] || event.clientName;
+  const when = event.eventDate ? formatDate(event.eventDate) : 'your requested date';
+  return `Hi ${firstName}! We currently have ${when} pencil-booked for your event. Kindly confirm at your earliest convenience so we can finalize your reservation — we wouldn't want to release the date. Thank you!`;
+}
+
+// Decides which follow-up template applies: an overdue/pending payment takes priority
+// (there's a concrete penalty for delay), then a pencil booking awaiting confirmation,
+// falling back to the generic inquiry follow-up.
+export function determineFollowUp(event, payment) {
+  if (payment) {
+    const dueTranche = ['downpayment', 'balance'].find(f => ['pending', 'overdue'].includes(payment[f]?.status));
+    if (dueTranche) {
+      return { type: 'payment', label: `${dueTranche === 'balance' ? 'Balance' : 'Down payment'} follow-up`, message: buildPaymentFollowUpMessage(payment[dueTranche], dueTranche) };
+    }
+  }
+  if (event.status === 'pencil' && event.eventDate) {
+    return { type: 'pencil', label: 'Booking confirmation follow-up', message: buildPencilFollowUpMessage(event) };
+  }
+  return { type: 'general', label: 'General follow-up', message: buildFollowUpMessage(event) };
 }
 
 export function openSmsComposer(phone, message) {

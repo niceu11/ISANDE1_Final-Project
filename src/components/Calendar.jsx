@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import Badge from './Badge';
 import './Calendar.css';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -15,7 +17,8 @@ function sameDate(a, b) {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 }
 
-export default function Calendar({ events = [], notes = [], onAddNote }) {
+export default function Calendar({ events = [], notes = [], onAddNote, role }) {
+  const navigate = useNavigate();
   const today = new Date();
   const [current, setCurrent] = useState({ year: today.getFullYear(), month: today.getMonth() });
   const [selectedDay, setSelectedDay] = useState(null);
@@ -28,12 +31,12 @@ export default function Calendar({ events = [], notes = [], onAddNote }) {
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
   const eventMap = {};
-  events.forEach(({ date, status }) => {
-    const d = new Date(date);
+  events.forEach((ev) => {
+    const d = new Date(ev.date);
     if (d.getFullYear() === year && d.getMonth() === month) {
       const key = d.getDate();
       if (!eventMap[key]) eventMap[key] = [];
-      eventMap[key].push(status);
+      eventMap[key].push(ev);
     }
   });
 
@@ -67,7 +70,7 @@ export default function Calendar({ events = [], notes = [], onAddNote }) {
   };
 
   const openDay = (day) => {
-    if (!day || !onAddNote) return;
+    if (!day) return;
     setSelectedDay(day);
     setDraftText('');
     setDraftType('note');
@@ -77,6 +80,7 @@ export default function Calendar({ events = [], notes = [], onAddNote }) {
 
   const selectedDate = selectedDay ? new Date(year, month, selectedDay) : null;
   const notesForSelected = selectedDay ? (noteMap[selectedDay] ?? []) : [];
+  const eventsForSelected = selectedDay ? (eventMap[selectedDay] ?? []) : [];
 
   const handleAdd = async () => {
     if (!draftText.trim() || !onAddNote) return;
@@ -102,10 +106,10 @@ export default function Calendar({ events = [], notes = [], onAddNote }) {
           <div key={d} className="cal-day-label">{d}</div>
         ))}
         {cells.map((day, i) => {
-          const statuses = day ? (eventMap[day] ?? []) : [];
+          const dayEvents = day ? (eventMap[day] ?? []) : [];
           const dayNotes = day ? (noteMap[day] ?? []) : [];
           const isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
-          const isClickable = Boolean(day && onAddNote);
+          const isClickable = Boolean(day && (onAddNote || dayEvents.length));
           const Tag = isClickable ? 'button' : 'div';
           return (
             <Tag
@@ -113,15 +117,15 @@ export default function Calendar({ events = [], notes = [], onAddNote }) {
               type={isClickable ? 'button' : undefined}
               className={`cal-cell ${day ? '' : 'cal-cell-empty'} ${isToday ? 'cal-cell-today' : ''} ${isClickable ? 'cal-cell-clickable' : ''}`}
               onClick={isClickable ? () => openDay(day) : undefined}
-              aria-label={day ? `${MONTHS[month]} ${day}, ${year}${isClickable ? ' — add a note or deadline' : ''}` : undefined}
+              aria-label={day ? `${MONTHS[month]} ${day}, ${year}${isClickable ? ' — view events, add a note or deadline' : ''}` : undefined}
               disabled={!isClickable && !day}
             >
               {day && (
                 <>
                   <span className="cal-day-num">{day}</span>
                   <div className="cal-dots">
-                    {statuses.map((s, j) => (
-                      <span key={`e${j}`} className={`cal-dot cal-dot-${s}`} />
+                    {dayEvents.map((ev, j) => (
+                      <span key={`e${j}`} className={`cal-dot cal-dot-${ev.status}`} />
                     ))}
                     {dayNotes.map((n, j) => (
                       <span key={`n${j}`} className={`cal-dot cal-dot-${n.type}`} title={n.text} />
@@ -147,6 +151,28 @@ export default function Calendar({ events = [], notes = [], onAddNote }) {
             <h2 className="modal-title">
               {MONTHS[month]} {selectedDay}, {year}
             </h2>
+
+            {eventsForSelected.length > 0 && (
+              <div className="cal-day-notes" style={{ marginBottom: 14 }}>
+                {eventsForSelected.map(ev => {
+                  const clickable = role === 'ae' && ev.id;
+                  const Row = clickable ? 'button' : 'div';
+                  return (
+                    <Row
+                      key={ev.id ?? ev.clientName}
+                      type={clickable ? 'button' : undefined}
+                      onClick={clickable ? () => navigate(`/ae/clients/${ev.id}`) : undefined}
+                      className="cal-day-note"
+                      style={clickable ? { cursor: 'pointer', width: '100%', textAlign: 'left', background: 'none', border: 'none', font: 'inherit', padding: 0 } : undefined}
+                    >
+                      <Badge variant={ev.status} />
+                      <span className="cal-day-note-text">{ev.clientName}{ev.venue ? ` — ${ev.venue}` : ''}</span>
+                      {clickable && <span className="cal-day-note-author">View →</span>}
+                    </Row>
+                  );
+                })}
+              </div>
+            )}
 
             {notesForSelected.length > 0 && (
               <div className="cal-day-notes">

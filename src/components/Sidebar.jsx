@@ -3,7 +3,7 @@ import ShieldCrest from './ShieldCrest';
 import { getCurrentUser } from './RequireAuth';
 import {
   DashboardIcon, InquiriesIcon, CalendarIcon, ClientsIcon,
-  PaymentsIcon, ReportsIcon, EventDayIcon, LogoutIcon,
+  PaymentsIcon, ReportsIcon, EventDayIcon, HistoryIcon, LogoutIcon,
 } from './icons/NavIcons';
 import './Sidebar.css';
 
@@ -19,11 +19,13 @@ const NAV_ITEMS = {
     { label: 'Dashboard',  path: '/manager/dashboard', Icon: DashboardIcon },
     { label: 'Calendar',   path: '/calendar',          Icon: CalendarIcon },
     { label: 'Reports',    path: '/reports',           Icon: ReportsIcon },
+    { label: 'History',    path: '/history',           Icon: HistoryIcon },
   ],
   ceo: [
     { label: 'Dashboard',  path: '/ceo/dashboard', Icon: DashboardIcon },
     { label: 'Calendar',   path: '/calendar',      Icon: CalendarIcon },
     { label: 'Reports',    path: '/reports',       Icon: ReportsIcon },
+    { label: 'History',    path: '/history',       Icon: HistoryIcon },
   ],
   staff: [
     { label: 'Dashboard',  path: '/staff/dashboard', Icon: DashboardIcon },

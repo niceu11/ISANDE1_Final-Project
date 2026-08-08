@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../api/client';
+import { getCurrentUser } from '../../components/RequireAuth';
 
 export default function InquiryModal({ onClose, onSaved }) {
   const [form, setForm] = useState({
@@ -33,7 +34,8 @@ export default function InquiryModal({ onClose, onSaved }) {
     setSaving(true);
     setError('');
     try {
-      await api.createEvent(form);
+      const user = getCurrentUser();
+      await api.createEvent({ ...form, author: user?.name, authorRole: user?.role });
       onSaved?.();
       onClose();
     } catch (err) {

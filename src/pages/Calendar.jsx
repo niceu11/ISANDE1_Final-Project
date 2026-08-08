@@ -39,7 +39,7 @@ export default function CalendarPage() {
 
   const calendarEvents = events
     .filter(e => ['confirmed', 'pencil'].includes(e.status) && e.eventDate)
-    .map(e => ({ date: e.eventDate, status: e.status }));
+    .map(e => ({ id: e._id, date: e.eventDate, status: e.status, clientName: e.clientName, venue: e.venue }));
 
   const upcomingList = events
     .filter(e => ['confirmed', 'pencil'].includes(e.status) && e.eventDate)
@@ -61,7 +61,7 @@ export default function CalendarPage() {
 
         {!loading && !error && (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 24, alignItems: 'start' }}>
-            <Calendar events={calendarEvents} notes={notes} onAddNote={handleAddNote} />
+            <Calendar events={calendarEvents} notes={notes} onAddNote={handleAddNote} role={role} />
 
             <Card title="Upcoming Events" accent="sage">
               {upcomingList.length === 0 && <p style={{ color: 'var(--color-text-sub)', fontSize: 13 }}>No upcoming events.</p>}

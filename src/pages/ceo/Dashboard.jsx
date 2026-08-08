@@ -53,7 +53,7 @@ export default function CEODashboard() {
 
   const calendarEvents = events
     .filter(e => ['confirmed', 'pencil'].includes(e.status) && e.eventDate)
-    .map(e => ({ date: e.eventDate, status: e.status }));
+    .map(e => ({ id: e._id, date: e.eventDate, status: e.status, clientName: e.clientName, venue: e.venue }));
 
   const stats = [
     { label: 'Confirmed Bookings', value: confirmed.length, accent: 'sage' },
@@ -90,7 +90,7 @@ export default function CEODashboard() {
             {/* Calendar */}
             <div style={{ marginBottom: 28 }}>
               <div style={{ fontSize: 11, color: 'var(--color-text-sub)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10 }}>Booking Calendar</div>
-              <Calendar events={calendarEvents} notes={notes} onAddNote={handleAddNote} />
+              <Calendar events={calendarEvents} notes={notes} onAddNote={handleAddNote} role="ceo" />
             </div>
 
             {/* Confirmed bookings list */}

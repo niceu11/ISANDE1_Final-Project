@@ -2,6 +2,7 @@ import { Router } from 'express';
 import Payment from '../models/Payment.js';
 import Event from '../models/Event.js';
 import { asyncHandler } from '../asyncHandler.js';
+import { logAudit } from '../audit.js';
 
 const router = Router();
 
@@ -26,7 +27,7 @@ router.get('/event/:eventId', asyncHandler(async (req, res) => {
 }));
 
 router.patch('/event/:eventId/upload-proof', asyncHandler(async (req, res) => {
-  const { field, fileName } = req.body; // 'downpayment' | 'balance'
+  const { field, fileName, author = '', authorRole = '' } = req.body; // 'downpayment' | 'balance'
   if (!['downpayment', 'balance'].includes(field)) {
     return res.status(400).json({ error: 'field must be "downpayment" or "balance"' });
   }
@@ -45,11 +46,21 @@ router.patch('/event/:eventId/upload-proof', asyncHandler(async (req, res) => {
     status: 'pending',
   });
   await payment.save();
+
+  await logAudit({
+    action: 'payment.proof_uploaded',
+    entityType: 'payment',
+    entityId: payment._id,
+    entityLabel: payment.clientName,
+    actorName: author,
+    actorRole: authorRole,
+    detail: `Uploaded proof of payment for ${field} (${payment[field].proofFileName})`,
+  });
   res.json(payment);
 }));
 
 router.patch('/event/:eventId/verify', asyncHandler(async (req, res) => {
-  const { field } = req.body; // 'downpayment' | 'balance'
+  const { field, author = '', authorRole = '' } = req.body; // 'downpayment' | 'balance'
   if (!['downpayment', 'balance'].includes(field)) {
     return res.status(400).json({ error: 'field must be "downpayment" or "balance"' });
   }
@@ -64,6 +75,16 @@ router.patch('/event/:eventId/verify', asyncHandler(async (req, res) => {
     status: 'verified',
   });
   await payment.save();
+
+  await logAudit({
+    action: 'payment.verified',
+    entityType: 'payment',
+    entityId: payment._id,
+    entityLabel: payment.clientName,
+    actorName: author,
+    actorRole: authorRole,
+    detail: `Verified ${field} of ${payment[field].amount.toLocaleString('en-PH')} for ${payment.clientName}`,
+  });
   res.json(payment);
 }));
 

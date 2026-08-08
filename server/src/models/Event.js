@@ -39,6 +39,7 @@ const eventSchema = new mongoose.Schema({
   suppliers: [supplierSchema],
   instructions: [String],
   featured: { type: Boolean, default: false },
+  packageSent: { type: Boolean, default: false },
 }, { timestamps: true });
 
 export default mongoose.model('Event', eventSchema);

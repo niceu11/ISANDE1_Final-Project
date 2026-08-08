@@ -4,6 +4,7 @@ import AppLayout from '../../components/AppLayout';
 import Card from '../../components/Card';
 import Badge from '../../components/Badge';
 import { api, formatCurrency, formatDate } from '../../api/client';
+import { getCurrentUser } from '../../components/RequireAuth';
 
 function TrancheProof({ tranche, field, uploading, onUpload }) {
   const inputRef = useRef(null);
@@ -76,7 +77,8 @@ export default function PaymentTracker() {
   const handleUpload = async (field, fileName) => {
     setUploading(field);
     try {
-      const updated = await api.uploadProof(data.eventId, field, fileName);
+      const user = getCurrentUser();
+      const updated = await api.uploadProof(data.eventId, field, fileName, user?.name, user?.role);
       setData(updated);
     } catch (err) {
       alert(err.message || 'Could not upload proof of payment');

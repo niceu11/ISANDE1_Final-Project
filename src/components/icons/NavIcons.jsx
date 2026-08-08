@@ -75,6 +75,16 @@ export function EventDayIcon(props) {
   );
 }
 
+export function HistoryIcon(props) {
+  return (
+    <svg {...common} {...props}>
+      <path d="M4 12a8 8 0 1 0 2.6-5.9" />
+      <path d="M4 4.5V8.5H8" />
+      <path d="M12 8V12.5L15 14.5" />
+    </svg>
+  );
+}
+
 export function LogoutIcon(props) {
   return (
     <svg {...common} {...props}>

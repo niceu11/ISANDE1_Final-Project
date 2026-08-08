@@ -42,7 +42,7 @@ export default function ManagerDashboard() {
     if (!pendingVerify) return;
     setVerifying(true);
     try {
-      await api.verifyPayment(pendingVerify.eventId, pendingVerify.field);
+      await api.verifyPayment(pendingVerify.eventId, pendingVerify.field, user?.name, user?.role);
       load();
       setToast(`Verified: ${pendingVerify.label} for ${pendingVerify.client} (${pendingVerify.amount})`);
       setTimeout(() => setToast(null), 4000);
@@ -67,7 +67,7 @@ export default function ManagerDashboard() {
 
   const calendarEvents = events
     .filter(e => ['confirmed', 'pencil'].includes(e.status) && e.eventDate)
-    .map(e => ({ date: e.eventDate, status: e.status }));
+    .map(e => ({ id: e._id, date: e.eventDate, status: e.status, clientName: e.clientName, venue: e.venue }));
 
   const pendingVerifications = [];
   payments.forEach(p => {
@@ -77,6 +77,8 @@ export default function ManagerDashboard() {
           eventId: p.eventId, client: p.clientName,
           label: field === 'downpayment' ? 'Downpayment' : 'Balance',
           amount: formatCurrency(p[field].amount),
+          proofFileName: p[field].proofFileName,
+          proofUploadedAt: p[field].proofUploadedAt,
           field,
         });
       }
@@ -115,7 +117,7 @@ export default function ManagerDashboard() {
           <>
             {/* Calendar hero */}
             <div style={{ marginBottom: 28 }}>
-              <Calendar events={calendarEvents} notes={notes} onAddNote={handleAddNote} />
+              <Calendar events={calendarEvents} notes={notes} onAddNote={handleAddNote} role="manager" />
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
@@ -133,6 +135,12 @@ export default function ManagerDashboard() {
                     <div>
                       <div style={{ fontWeight: 500, fontSize: 13 }}>{p.client}</div>
                       <div style={{ fontSize: 11, color: 'var(--color-text-sub)' }}>{p.label} · {p.amount}</div>
+                      <div className="proof-status proof-status-pending" style={{ marginTop: 6, padding: '6px 10px' }}>
+                        <span>📎 {p.proofFileName || 'proof-of-payment'}</span>
+                        {p.proofUploadedAt && (
+                          <span className="proof-status-meta">Submitted {formatDate(p.proofUploadedAt, { month: 'short', day: 'numeric' })}</span>
+                        )}
+                      </div>
                     </div>
                     <button className="btn btn-primary" style={{ fontSize: 12, padding: '6px 14px' }}
                       onClick={() => requestVerify(p)}>
@@ -163,7 +171,7 @@ export default function ManagerDashboard() {
         {pendingVerify && (
           <ConfirmDialog
             title="Verify this payment?"
-            message={`Confirm you've checked the bank record for ${pendingVerify.client}'s ${pendingVerify.label.toLowerCase()} of ${pendingVerify.amount}. This marks it as verified and can't be undone from here.`}
+            message={`${pendingVerify.client}'s ${pendingVerify.label.toLowerCase()} of ${pendingVerify.amount} — proof submitted: "${pendingVerify.proofFileName || 'proof-of-payment'}"${pendingVerify.proofUploadedAt ? ` on ${formatDate(pendingVerify.proofUploadedAt, { month: 'short', day: 'numeric' })}` : ''}. Confirm you've checked this against the bank record. This marks it as verified and can't be undone from here.`}
             confirmLabel="Verify Payment"
             busy={verifying}
             onConfirm={confirmVerify}
