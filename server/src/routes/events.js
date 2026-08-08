@@ -30,6 +30,42 @@ router.get('/availability', asyncHandler(async (req, res) => {
   res.json({ available: conflicts.length === 0, conflicts });
 }));
 
+const STATUS_VALUES = ['hot', 'warm', 'cold', 'pencil', 'confirmed'];
+const CONTRACT_VALUES = ['signed', 'pending'];
+
+router.post('/import', asyncHandler(async (req, res) => {
+  const { rows } = req.body;
+  if (!Array.isArray(rows) || rows.length === 0) {
+    return res.status(400).json({ error: 'rows array is required' });
+  }
+
+  const docs = rows
+    .filter(r => r.clientName && String(r.clientName).trim())
+    .map(r => {
+      const parsedDate = r.eventDate ? new Date(r.eventDate) : null;
+      return {
+        clientName: String(r.clientName).trim(),
+        contact: r.contact ? String(r.contact).trim() : '',
+        email: r.email ? String(r.email).trim() : '',
+        eventDate: parsedDate && !Number.isNaN(parsedDate.getTime()) ? parsedDate : undefined,
+        eventType: r.eventType ? String(r.eventType).trim() : '',
+        venue: r.venue ? String(r.venue).trim() : '',
+        guestCount: Number(r.guestCount) || 0,
+        status: STATUS_VALUES.includes(r.status) ? r.status : 'warm',
+        contractStatus: CONTRACT_VALUES.includes(r.contractStatus) ? r.contractStatus : 'pending',
+        lastActivityAt: new Date(),
+        notes: [{ date: new Date(), author: 'Import', text: 'Imported from spreadsheet.' }],
+      };
+    });
+
+  if (docs.length === 0) {
+    return res.status(400).json({ error: 'No valid rows to import — Client Name is required in every row' });
+  }
+
+  const inserted = await Event.insertMany(docs);
+  res.status(201).json({ imported: inserted.length, skipped: rows.length - docs.length });
+}));
+
 router.get('/:id', asyncHandler(async (req, res) => {
   const event = await Event.findById(req.params.id);
   if (!event) return res.status(404).json({ error: 'Event not found' });
