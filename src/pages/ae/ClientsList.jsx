@@ -1,9 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '../../components/AppLayout';
 import Badge from '../../components/Badge';
+import Toast from '../../components/Toast';
 import { api, formatDate } from '../../api/client';
 import { usePolling } from '../../hooks/usePolling';
+import { getCurrentUser } from '../../components/RequireAuth';
+import { generateClientsPdf } from '../../pdf/generateClientsPdf';
+import { csvToClientRows, downloadClientImportTemplate } from '../../utils/csv';
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'Filter: All Statuses' },
@@ -16,10 +20,13 @@ const STATUS_OPTIONS = [
 
 export default function ClientsList() {
   const navigate = useNavigate();
+  const fileInputRef = useRef(null);
   const [events, setEvents] = useState([]);
   const [statusFilter, setStatusFilter] = useState('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [importing, setImporting] = useState(false);
+  const [toast, setToast] = useState(null);
 
   const load = (silent = false) => {
     if (!silent) setLoading(true);
@@ -31,6 +38,40 @@ export default function ClientsList() {
 
   useEffect(load, []);
   usePolling(() => load(true));
+
+  const showToast = (message, tone = 'success') => {
+    setToast({ message, tone });
+    setTimeout(() => setToast(null), 4000);
+  };
+
+  const handleExportPdf = () => {
+    generateClientsPdf(events, getCurrentUser()?.name);
+  };
+
+  const handleImportClick = () => fileInputRef.current?.click();
+
+  const handleImportFile = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+
+    setImporting(true);
+    try {
+      const text = await file.text();
+      const rows = csvToClientRows(text);
+      if (rows.length === 0) {
+        showToast('No rows found in that file — check it matches the template format.', 'error');
+        return;
+      }
+      const result = await api.importClients(rows);
+      load();
+      showToast(`Imported ${result.imported} client${result.imported === 1 ? '' : 's'}${result.skipped ? ` — skipped ${result.skipped} row${result.skipped === 1 ? '' : 's'} missing a Client Name` : ''}.`);
+    } catch (err) {
+      showToast(err.message || 'Import failed.', 'error');
+    } finally {
+      setImporting(false);
+    }
+  };
 
   const filtered = events
     .filter(e => statusFilter === 'all' || e.status === statusFilter)
@@ -52,6 +93,18 @@ export default function ClientsList() {
             {events.length} tracked clients · {confirmedUpcoming} confirmed and awaiting event day
           </p>
         </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <input ref={fileInputRef} type="file" accept=".csv" style={{ display: 'none' }} onChange={handleImportFile} />
+          <button className="btn btn-secondary" style={{ fontSize: 12.5 }} onClick={downloadClientImportTemplate}>
+            Download Template
+          </button>
+          <button className="btn btn-secondary" style={{ fontSize: 12.5 }} onClick={handleImportClick} disabled={importing}>
+            {importing ? 'Importing…' : 'Import Clients (CSV)'}
+          </button>
+          <button className="btn btn-primary" style={{ fontSize: 12.5 }} onClick={handleExportPdf} disabled={events.length === 0}>
+            Export PDF
+          </button>
+        </div>
       </div>
 
       <div className="filters-row">
@@ -60,6 +113,9 @@ export default function ClientsList() {
             <option key={opt.value} value={opt.value}>{opt.label}</option>
           ))}
         </select>
+        <span style={{ fontSize: 11.5, color: 'var(--color-text-sub)' }}>
+          Import expects: {['Client Name', 'Contact', 'Email', 'Event Date', 'Event Type', 'Venue', 'Guest Count', 'Status', 'Contract Status'].join(', ')} — download the template for the exact format.
+        </span>
       </div>
 
       {loading && <p style={{ color: 'var(--color-text-sub)' }}>Loading…</p>}
@@ -104,6 +160,8 @@ export default function ClientsList() {
           </tbody>
         </table>
       )}
+
+      {toast && <Toast message={toast.message} tone={toast.tone} />}
     </AppLayout>
   );
 }

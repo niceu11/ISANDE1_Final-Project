@@ -23,6 +23,8 @@ export const api = {
     request(`/events/availability?date=${encodeURIComponent(date)}${excludeId ? `&excludeId=${excludeId}` : ''}`),
   createEvent: (payload) =>
     request('/events', { method: 'POST', body: JSON.stringify(payload) }),
+  importClients: (rows) =>
+    request('/events/import', { method: 'POST', body: JSON.stringify({ rows }) }),
   updateQuickNote: (id, quickNote) =>
     request(`/events/${id}/quick-note`, { method: 'PATCH', body: JSON.stringify({ quickNote }) }),
   logFollowUp: (id, method, author, authorRole) =>
